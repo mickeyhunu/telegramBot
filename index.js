@@ -36,7 +36,10 @@ function createBot(token, { databasePools } = {}) {
   const bot = new Bot(token);
   let botUsername;
 
-  bot.on('message', createChoiceMessageHandler({ databasePool: pools.chatbot }));
+  bot.on('message', createChoiceMessageHandler({
+    databasePool: pools.chatbot,
+    isAllowedChat: isTargetGroup,
+  }));
 
   bot.command('start', async (ctx) => {
     await ctx.reply([

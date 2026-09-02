@@ -16,10 +16,13 @@ async function getChoiceMessage(databasePool, storeNo) {
   return rows[0]?.choiceMsg || null;
 }
 
-function createChoiceMessageHandler({ databasePool, logger = console }) {
+function createChoiceMessageHandler({ databasePool, isAllowedChat, logger = console }) {
   if (!databasePool) throw new Error('CHATBOT 데이터베이스 연결 풀이 필요합니다.');
+  if (!isAllowedChat) throw new Error('초이스톡 허용 채팅 확인 함수가 필요합니다.');
 
   return async function handleChoiceMessage(ctx, next = () => {}) {
+    if (!isAllowedChat(ctx.chat)) return next();
+
     const storeNo = STORE_NUMBERS[ctx.message?.text?.trim()];
     if (!storeNo) return next();
 

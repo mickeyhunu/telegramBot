@@ -24,7 +24,8 @@ Privacy Mode를 비활성화해야 합니다. 봇에는 메시지 전송과 사�
 
 ## 초이스톡 메시지
 
-사용자가 `달`, `엘`, `디`, `유`, `도`, `제`, `갤` 중 하나를 보내면 봇은
-`chatBot_DB.INFO_CHOICE` 테이블에서 해당 `storeNo`의 `choiceMsg`를 조회해 답장합니다.
-Telegram 그룹에서 일반 메시지를 수신하려면 BotFather의 `/setprivacy`에서 Privacy
-Mode를 꺼야 합니다.
+`미드나잇맨즈 소통방` 그룹에서 사용자가 `달`, `엘`, `디`, `유`, `도`, `제`, `갤` 중
+하나를 보내면 봇은 `chatBot_DB.INFO_CHOICE` 테이블에서 해당 `storeNo`의 `choiceMsg`를
+조회해 답장합니다. 개인 대화방이나 다른 그룹에서는 초이스톡 메시지에 답장하지
+않습니다. Telegram 그룹에서 일반 메시지를 수신하려면 BotFather의 `/setprivacy`에서
+Privacy Mode를 꺼야 합니다.
