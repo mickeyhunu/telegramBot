@@ -2,7 +2,7 @@
 
 ## 설정
 
-`.env.example`을 `.env`로 복사한 뒤 다음 값을 설정합니다.
+프로젝트 루트의 `.env`에 다음 값을 설정합니다.
 
 - `BOT_TOKEN`: BotFather에서 발급받은 Telegram 봇 토큰
 - `MNMS_MYSQL_*`: `mnms_prod` 데이터베이스 접속 정보
