@@ -3,6 +3,7 @@ require('dotenv').config();
 const { Bot, InlineKeyboardBuilder } = require('node-telegram-bot-api');
 const { run } = require('node-telegram-bot-api/node');
 const { createDatabasePools, getDatabaseStatuses } = require('./database');
+const { createChoiceMessageHandler } = require('./choiceMessages');
 
 const GROUP_NAME = '미드나잇맨즈 소통방';
 const WEBSITE_URL = 'https://nightmens.com/';
@@ -34,6 +35,8 @@ function createBot(token, { databasePools } = {}) {
 
   const bot = new Bot(token);
   let botUsername;
+
+  bot.on('message', createChoiceMessageHandler({ databasePool: pools.chatbot }));
 
   bot.command('start', async (ctx) => {
     await ctx.reply([
