@@ -25,8 +25,30 @@ function buildGroupMenu(botUsername) {
     .build();
 }
 
-function isTargetGroup(chat) {
-  return ['group', 'supergroup'].includes(chat?.type) && chat.title === GROUP_NAME;
+function readTargetGroupIds(env = process.env) {
+  return new Set((env.TELEGRAM_GROUP_IDS || env.TELEGRAM_GROUP_ID || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean));
+}
+
+function normalizeGroupTitle(title = '') {
+  return title
+    .normalize('NFKC')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isTargetGroup(chat, env = process.env) {
+  if (!['group', 'supergroup'].includes(chat?.type)) return false;
+
+  const targetGroupIds = readTargetGroupIds(env);
+  if (targetGroupIds.size) return targetGroupIds.has(String(chat.id));
+
+  // Telegram group titles are editable. Keep the bot working when an emoji,
+  // decoration, or accidental extra whitespace is added around the known name.
+  return normalizeGroupTitle(chat.title).includes(GROUP_NAME);
 }
 
 function createBot(token, { databasePools } = {}) {
@@ -48,10 +70,15 @@ function createBot(token, { databasePools } = {}) {
       '사용 가능한 명령어',
       '• /start - 봇 안내와 메뉴 보기',
       `• /메뉴 - ${GROUP_NAME}에서 봇 메뉴 열기`,
+      '• /chatid - 현재 채팅 ID 확인',
       '• /dbinfo - 연결된 데이터베이스 정보 보기',
       '',
       '원하시는 메뉴를 선택해 주세요.',
     ].join('\n'), { reply_markup: buildStartMenu() });
+  });
+
+  bot.command('chatid', async (ctx) => {
+    await ctx.reply(`현재 채팅 ID: ${ctx.chatId}`);
   });
 
   bot.command('dbinfo', async (ctx) => {
@@ -105,4 +132,13 @@ function createBot(token, { databasePools } = {}) {
 
 if (require.main === module) run(createBot(process.env.BOT_TOKEN));
 
-module.exports = { GROUP_NAME, WEBSITE_URL, buildGroupMenu, buildStartMenu, createBot, isTargetGroup };
+module.exports = {
+  GROUP_NAME,
+  WEBSITE_URL,
+  buildGroupMenu,
+  buildStartMenu,
+  createBot,
+  isTargetGroup,
+  normalizeGroupTitle,
+  readTargetGroupIds,
+};
