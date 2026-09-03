@@ -21,7 +21,9 @@ async function getChojoongMessages(databasePool, storeNo) {
 async function getLiveInformation(databasePool, action, store) {
   if (action === 'choice') return getChoiceMessage(databasePool, store.storeNo);
   if (action === 'search') return getChojoongMessages(databasePool, store.storeNo);
-  if (action === 'waiting') return { roomInfo: store.roomInfo, waitInfo: store.waitInfo };
+  if (action === 'waiting') {
+    return { roomInfo: store.roomInfo, waitInfo: store.waitInfo, updatedAt: store.updatedAt };
+  }
   throw new Error(`지원하지 않는 LIVE 정보입니다: ${action}`);
 }
 

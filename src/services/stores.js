@@ -15,7 +15,7 @@ async function getStore(databasePool, storeNo) {
 
   const [rows] = await databasePool.execute(
     `SELECT store.storeNo, store.storeName, store.storeEmoji, store.storeAddress,
-            room.roomInfo, room.waitInfo
+            room.roomInfo, room.waitInfo, room.updatedAt
      FROM INFO_STORE AS store
      LEFT JOIN INFO_ROOM AS room ON room.storeNo = store.storeNo
      WHERE store.storeNo = ?

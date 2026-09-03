@@ -49,6 +49,13 @@ function formatChojoongInformation({ message, createdAt }) {
   return [message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n');
 }
 
+const LIVE_SECTION_DIVIDER = '➖➖➖➖➖➖➖➖➖➖➖➖➖➖';
+
+function appendTimestamp(message, value) {
+  const timestamp = formatChojoongCreatedAt(value);
+  return [message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n');
+}
+
 function liveInformationMessage(store, action, information) {
   const headers = {
     choice: '💬 초이스톡',
@@ -63,9 +70,14 @@ function liveInformationMessage(store, action, information) {
       : '준비중입니다...';
   } else if (action === 'waiting') {
     const roomInfo = String(information.roomInfo) === '999' ? '여유' : formatLiveValue(information.roomInfo);
-    details = `룸 : ${roomInfo}\n웨이팅 : ${formatLiveValue(information.waitInfo)}`;
+    details = appendTimestamp(
+      `룸 : ${roomInfo}\n웨이팅 : ${formatLiveValue(information.waitInfo)}`,
+      information.updatedAt,
+    );
   } else {
-    details = formatLiveValue(information);
+    details = information && typeof information === 'object'
+      ? appendTimestamp(formatLiveValue(information.message), information.createdAt)
+      : formatLiveValue(information);
   }
 
   return [
@@ -75,6 +87,7 @@ function liveInformationMessage(store, action, information) {
     `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
     '',
     headers[action],
+    LIVE_SECTION_DIVIDER,
     details,
   ].join('\n');
 }
