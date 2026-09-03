@@ -23,7 +23,12 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     isAllowedChat: isTargetGroup,
     requireSubscriptions,
   }));
-  registerMenuHandlers(bot, { config, isTargetGroup, requireSubscriptions });
+  registerMenuHandlers(bot, {
+    config,
+    isTargetGroup,
+    requireSubscriptions,
+    businessAdsPool: pools.mnms,
+  });
   registerSystemHandlers(bot, pools);
   registerWelcomeHandler(bot, { config, isTargetGroup });
   bot.catch((error) => console.error('Telegram bot handler failed:', error));

@@ -59,10 +59,13 @@ function buildLiveMenu(links = DEFAULT_LINKS) {
 function buildPartnersMenu(partnerBusinesses = [], links = DEFAULT_LINKS) {
   const keyboard = new InlineKeyboardBuilder();
   const businesses = partnerBusinesses.length
-    ? partnerBusinesses
+    ? partnerBusinesses.map(({ id, title, name, url }) => ({
+      name: title || name,
+      url: url || `${links.partners.replace(/\/$/, '')}/${id}`,
+    }))
     : [{ name: '제휴업체 전체보기', url: links.partners }];
 
-  businesses.forEach(({ name, url }) => keyboard.url(`🤝 ${name}`, url).row());
+  businesses.forEach(({ name, url }) => keyboard.url(name, url).row());
   keyboard.text('⬅️ 처음으로', 'menu_home');
   return colorize(addFixedLinks(keyboard, links), links);
 }
