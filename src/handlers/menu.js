@@ -176,6 +176,5 @@ module.exports = {
   sendPrivateMenu,
   sendSubscriptionGate,
   startSubscriptionFlow,
-  subscriptionStatusMessage,
   verifySubscriptions,
 };
