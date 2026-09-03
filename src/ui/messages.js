@@ -49,16 +49,19 @@ function formatChojoongCreatedAt(value) {
   return `${Number(month)}월 ${Number(day)}일 ${Number(hour)}시 ${Number(minute)}분 기준`;
 }
 
-function formatChojoongInformation({ message, createdAt }) {
-  const timestamp = formatChojoongCreatedAt(createdAt);
-  return [message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n');
-}
-
 const LIVE_SECTION_DIVIDER = '➖➖➖➖➖➖➖➖➖➖➖➖➖➖';
 
+function formatChojoongInformation({ message, createdAt }) {
+  const timestamp = formatChojoongCreatedAt(createdAt);
+  return [
+    message,
+    timestamp && LIVE_SECTION_DIVIDER,
+    timestamp && `🕒 ${timestamp}`,
+  ].filter(Boolean).join('\n');
+}
+
 function appendTimestamp(message, value) {
-  const timestamp = formatChojoongCreatedAt(value);
-  return [message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n');
+  return formatChojoongInformation({ message, createdAt: value });
 }
 
 function liveInformationMessage(store, action, information) {
