@@ -15,8 +15,6 @@
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
 - `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
 - `WEBSITE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 홈페이지, 제휴업체, 문의 버튼의 이동 주소
-- `PARTNER_BUSINESSES`: `업체명|URL` 형식의 제휴업체를 쉼표로 구분한 목록
-  (예: `A업체|https://example.com/a,B업체|https://example.com/b`)
 
 ```bash
 npm install
@@ -90,6 +88,10 @@ Privacy Mode를 꺼야 합니다.
   때마다 두 방의 가입 상태를 새로 조회합니다. 이용 도중 어느 한 방이라도 구독을
   취소했거나 가입 상태 조회에 실패하면 해당 기능을 실행하지 않고 초기 구독 안내를
   다시 표시합니다.
+- 제휴업체 안내는 `mnms_prod.business_ads`에서 `is_active = 1`인 업체를 실시간으로
+  조회합니다. 업체 버튼에는 `title`을 표시하고 `/business-info/{id}` 상세 페이지로
+  연결합니다. 표시 순서는 `PREMIUM`, `PLUS`, 기타 플랜 순이며, 같은 플랜에서는 최근
+  점프 순, 점프 시간도 같으면 최신 ID 순입니다.
 - 인라인 버튼은 기본적으로 파란색(`primary`)이며, 항상 표시되는 홈페이지/문의하기는
   초록색(`success`), 처음으로 버튼은 빨간색(`danger`)으로 표시됩니다. 색상 표시는 이를
   지원하는 Telegram 클라이언트에서 적용됩니다.

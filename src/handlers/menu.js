@@ -18,6 +18,7 @@ const {
   isSubscribed,
   logSubscriptionFailures,
 } = require('../services/subscriptions');
+const { getActiveBusinessAds } = require('../services/businessAds');
 
 const TELEGRAM_DELETE_BATCH_SIZE = 100;
 
@@ -167,6 +168,8 @@ function registerMenuHandlers(bot, {
   config,
   isTargetGroup,
   requireSubscriptions = (_ctx, next) => next(),
+  businessAdsPool,
+  loadActiveBusinessAds = getActiveBusinessAds,
 }) {
   const cache = {};
 
@@ -184,16 +187,25 @@ function registerMenuHandlers(bot, {
     const data = ctx.callbackQuery?.data;
     if (!['menu_home', 'menu_live', 'menu_partners'].includes(data)) return next();
 
-    return requireSubscriptions(ctx, () => {
+    return requireSubscriptions(ctx, async () => {
       if (data === 'menu_live') {
         return editPrivateMenu(ctx, liveGuideMessage(), buildLiveMenu(config.links));
       }
       if (data === 'menu_partners') {
-        return editPrivateMenu(
-          ctx,
-          partnersGuideMessage(config.partnerBusinesses.length > 0),
-          buildPartnersMenu(config.partnerBusinesses, config.links),
-        );
+        try {
+          const businesses = await loadActiveBusinessAds(businessAdsPool);
+          return editPrivateMenu(
+            ctx,
+            partnersGuideMessage(businesses.length > 0),
+            buildPartnersMenu(businesses, config.links),
+          );
+        } catch (error) {
+          console.error(`제휴업체 조회 실패: ${error.message}`);
+          return ctx.answerCallbackQuery({
+            text: '제휴업체 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+            show_alert: true,
+          });
+        }
       }
       return editPrivateMenu(ctx, privateGuideMessage(), buildPrivateMenu(config.links));
     });
