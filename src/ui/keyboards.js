@@ -13,7 +13,7 @@ function colorize(keyboard, links = {}) {
   const markup = keyboard.build();
   markup.inline_keyboard.forEach((row) => {
     row.forEach((button) => {
-      if (button.callback_data === 'menu_home') {
+      if (button.callback_data === 'menu_home' || button.text === '⬅️ 가게 다시 선택') {
         button.style = BUTTON_STYLES.danger;
       } else if ((links.website && button.url === links.website)
         || (links.support && button.url === links.support)) {
