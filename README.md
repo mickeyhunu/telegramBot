@@ -90,7 +90,9 @@ Privacy Mode를 꺼야 합니다.
   가게 선택 후에는 `storeAddress`도 함께 표시됩니다. 초이스톡은 `INFO_CHOICE`의
   `choiceMsg`, 초중은 `LIVE_CHOJOONG_HISTORY`의 최신 `chojoongMsg` 최대 5개를 표시하고,
   룸/웨이팅은 `INFO_STORE`의 `roomInfo`와 `waitInfo`를 표시합니다. `roomInfo`가 `999`이면
-  룸 상태는 `여유`로 안내합니다.
+  룸 상태는 `여유`로 안내합니다. 엔트리는 `ENTRY_TODAY`에서 선택한 가게의 출근 멤버를
+  등록 시간순으로 표시하고, `mentionCount * 5 + insertCount` 점수가 높은 인기 멤버를
+  최대 5명까지 함께 표시합니다.
   홈페이지와 문의하기 버튼은 모든 메뉴 단계에 고정으로 표시됩니다. 개인 메뉴, 그룹
   메뉴, 초이스톡 등 사용자 기능은 실행할
   때마다 두 방의 가입 상태를 새로 조회합니다. 이용 도중 어느 한 방이라도 구독을

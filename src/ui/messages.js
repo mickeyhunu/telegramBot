@@ -90,6 +90,32 @@ function appendTimestamp(message, value) {
   ].filter(Boolean).join('\n');
 }
 
+function entryInformationMessage(entries) {
+  const namesPerLine = 5;
+  const workerLines = [];
+  for (let index = 0; index < entries.length; index += namesPerLine) {
+    workerLines.push(entries.slice(index, index + namesPerLine)
+      .map(({ workerName }) => workerName)
+      .join(' '));
+  }
+
+  const popularMembers = entries
+    .map((entry, index) => ({ ...entry, index }))
+    .sort((first, second) => second.score - first.score || first.index - second.index)
+    .slice(0, 5)
+    .map(({ workerName, score }, index) => `${index + 1}. ${workerName} 합계 ${score}`);
+
+  return [
+    `총 출근인원 ${entries.length}명`,
+    '',
+    '엔트리 목록',
+    workerLines.length ? workerLines.join('\n') : '등록된 멤버가 없습니다.',
+    '',
+    '오늘의 인기 멤버 TOP 5',
+    popularMembers.length ? popularMembers.join('\n') : '등록된 멤버가 없습니다.',
+  ].join('\n');
+}
+
 function liveInformationMessage(store, action, information) {
   const headers = {
     choice: '💬 초이스톡',
@@ -97,6 +123,8 @@ function liveInformationMessage(store, action, information) {
     waiting: '🚪 룸/웨이팅',
   };
   let details;
+
+  if (action === 'entry') return entryInformationMessage(information);
 
   if (action === 'search') {
     details = information.length
@@ -202,6 +230,7 @@ function groupGuideCaption() {
 }
 
 module.exports = {
+  entryInformationMessage,
   formatChojoongCreatedAt,
   formatChojoongInformation,
   formatElapsedTime,
