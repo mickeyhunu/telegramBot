@@ -53,13 +53,14 @@ async function sendPrivateMenu(ctx, config) {
   await ctx.reply(privateGuideMessage(), { reply_markup: buildPrivateMenu(config.links) });
 }
 
-async function editPrivateMenu(ctx, text, replyMarkup) {
+async function editPrivateMenu(ctx, text, replyMarkup, options = {}) {
   await ctx.answerCallbackQuery();
   await ctx.api.editMessageText({
     chat_id: ctx.chatId,
     message_id: ctx.callbackQuery.message.message_id,
     text,
     reply_markup: replyMarkup,
+    ...options,
   });
 }
 
@@ -196,8 +197,9 @@ function registerMenuHandlers(bot, {
           const businesses = await loadActiveBusinessAds(businessAdsPool);
           return editPrivateMenu(
             ctx,
-            partnersGuideMessage(businesses.length > 0),
-            buildPartnersMenu(businesses, config.links),
+            partnersGuideMessage(businesses, config.links),
+            buildPartnersMenu(config.links),
+            { parse_mode: 'HTML', link_preview_options: { is_disabled: true } },
           );
         } catch (error) {
           console.error(`제휴업체 조회 실패: ${error.message}`);
