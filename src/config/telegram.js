@@ -1,5 +1,7 @@
 const GROUP_NAME = '미드나잇맨즈 소통방';
 const WEBSITE_URL = 'https://nightmens.com/';
+const ANNOUNCEMENT_URL = 'https://t.me/+1hcSUQN8lNswZTM1';
+const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
 
 const DEFAULT_LINKS = Object.freeze({
   website: WEBSITE_URL,
@@ -14,6 +16,11 @@ function readTelegramConfig(env = process.env) {
     groupIds: new Set((env.TELEGRAM_GROUP_IDS || env.TELEGRAM_GROUP_ID || '')
       .split(',').map((id) => id.trim()).filter(Boolean)),
     guideImage: env.TELEGRAM_GUIDE_IMAGE || '',
+    privateGuideImage: env.TELEGRAM_PRIVATE_GUIDE_IMAGE || 'assets/private-welcome.jpg',
+    subscriptionChats: [
+      { name: '미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
+      { name: '미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
+    ],
     links: {
       website: env.WEBSITE_URL || DEFAULT_LINKS.website,
       live: env.LIVE_URL || DEFAULT_LINKS.live,
