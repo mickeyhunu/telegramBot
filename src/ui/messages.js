@@ -79,7 +79,7 @@ function liveInformationMessage(store, action, information) {
   } else if (action === 'waiting') {
     const roomInfo = String(information.roomInfo) === '999' ? '여유' : formatLiveValue(information.roomInfo);
     details = appendTimestamp(
-      `룸 : ${roomInfo}\n웨이팅 : ${formatLiveValue(information.waitInfo)}`,
+      `🚪  룸 : ${roomInfo}\n⏳ 웨이팅 : ${formatLiveValue(information.waitInfo)}`,
       information.updatedAt,
     );
   } else {
