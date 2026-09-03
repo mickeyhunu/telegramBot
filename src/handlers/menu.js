@@ -1,6 +1,14 @@
-const { buildGroupMenu, buildPrivateMenu, buildSubscriptionMenu } = require('../ui/keyboards');
+const {
+  buildGroupMenu,
+  buildLiveMenu,
+  buildPartnersMenu,
+  buildPrivateMenu,
+  buildSubscriptionMenu,
+} = require('../ui/keyboards');
 const {
   groupGuideCaption,
+  liveGuideMessage,
+  partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,
 } = require('../ui/messages');
@@ -18,6 +26,16 @@ async function resolveBotUsername(ctx, cache) {
 
 async function sendPrivateMenu(ctx, config) {
   await ctx.reply(privateGuideMessage(), { reply_markup: buildPrivateMenu(config.links) });
+}
+
+async function editPrivateMenu(ctx, text, replyMarkup) {
+  await ctx.answerCallbackQuery();
+  await ctx.api.editMessageText({
+    chat_id: ctx.chatId,
+    message_id: ctx.callbackQuery.message.message_id,
+    text,
+    reply_markup: replyMarkup,
+  });
 }
 
 async function sendSubscriptionGate(ctx, config) {
@@ -139,6 +157,32 @@ function registerMenuHandlers(bot, {
   bot.on('callback_query', (ctx, next) => {
     if (ctx.callbackQuery?.data !== 'verify_subscriptions' || ctx.chat?.type !== 'private') return next();
     return verifySubscriptions(ctx, config);
+  });
+  bot.on('callback_query', (ctx, next) => {
+    if (ctx.chat?.type !== 'private') return next();
+    const data = ctx.callbackQuery?.data;
+    if (!['menu_home', 'menu_live', 'menu_partners'].includes(data)) return next();
+
+    return requireSubscriptions(ctx, () => {
+      if (data === 'menu_live') {
+        return editPrivateMenu(ctx, liveGuideMessage(), buildLiveMenu(config.links));
+      }
+      if (data === 'menu_partners') {
+        return editPrivateMenu(
+          ctx,
+          partnersGuideMessage(config.partnerBusinesses.length > 0),
+          buildPartnersMenu(config.partnerBusinesses, config.links),
+        );
+      }
+      return editPrivateMenu(ctx, privateGuideMessage(), buildPrivateMenu(config.links));
+    });
+  });
+  bot.on('callback_query', (ctx, next) => {
+    if (!ctx.callbackQuery?.data?.startsWith('live_') || ctx.chat?.type !== 'private') return next();
+    return requireSubscriptions(ctx, () => ctx.answerCallbackQuery({
+      text: '해당 LIVE 서비스는 준비 중입니다.',
+      show_alert: true,
+    }));
   });
   bot.hears(/^\/(?:채널안내|메뉴)(?:@\w+)?\s*$/, async (ctx) => {
     if (ctx.chat?.type === 'private') {
