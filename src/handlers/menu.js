@@ -42,6 +42,30 @@ async function checkSubscriptions(api, subscriptionChats, userId) {
   }, { failed: [], missing: [] });
 }
 
+function logSubscriptionFailures(failed) {
+  console.error('Telegram 구독 조회 실패:', failed.map(({ chat, error }) => ({
+    chat: chat.name,
+    chatId: chat.chatId,
+    error: error instanceof Error ? error.message : String(error),
+  })));
+}
+
+async function startSubscriptionFlow(ctx, config) {
+  const userId = ctx.from?.id;
+  if (!userId || config.subscriptionChats.some(({ chatId }) => !chatId)) {
+    return sendSubscriptionGate(ctx, config);
+  }
+
+  const result = await checkSubscriptions(ctx.api, config.subscriptionChats, userId);
+  if (result.failed.length) {
+    logSubscriptionFailures(result.failed);
+    return sendSubscriptionGate(ctx, config);
+  }
+
+  if (result.missing.length) return sendSubscriptionGate(ctx, config);
+  return sendPrivateMenu(ctx, config);
+}
+
 async function verifySubscriptions(ctx, config) {
   const userId = ctx.from?.id;
   if (!userId || config.subscriptionChats.some(({ chatId }) => !chatId)) {
@@ -67,11 +91,7 @@ async function verifySubscriptions(ctx, config) {
   }
 
   if (result.failed.length) {
-    console.error('Telegram 구독 조회 실패:', result.failed.map(({ chat, error }) => ({
-      chat: chat.name,
-      chatId: chat.chatId,
-      error: error instanceof Error ? error.message : String(error),
-    })));
+    logSubscriptionFailures(result.failed);
     await ctx.answerCallbackQuery({
       text: `${result.failed.map(({ chat }) => chat.name).join(', ')} 확인 권한이 없습니다. 봇을 해당 방의 관리자로 추가하고 채팅 ID 설정을 확인해 주세요.`,
       show_alert: true,
@@ -88,6 +108,17 @@ async function verifySubscriptions(ctx, config) {
   }
 
   await ctx.answerCallbackQuery({ text: '구독이 확인되었습니다.' });
+  const gateMessage = ctx.callbackQuery?.message;
+  if (gateMessage?.message_id) {
+    try {
+      await ctx.api.deleteMessage({
+        chat_id: gateMessage.chat?.id || ctx.chatId,
+        message_id: gateMessage.message_id,
+      });
+    } catch (error) {
+      console.error('기존 구독 확인 메시지 삭제 실패:', error);
+    }
+  }
   await sendPrivateMenu(ctx, config);
 }
 
@@ -111,7 +142,7 @@ function registerMenuHandlers(bot, { config, isTargetGroup }) {
 
   bot.command('start', (ctx) => {
     if (ctx.chat?.type !== 'private') return undefined;
-    return sendSubscriptionGate(ctx, config);
+    return startSubscriptionFlow(ctx, config);
   });
   bot.on('callback_query', (ctx, next) => {
     if (ctx.callbackQuery?.data !== 'verify_subscriptions' || ctx.chat?.type !== 'private') return next();
@@ -126,11 +157,13 @@ function registerMenuHandlers(bot, { config, isTargetGroup }) {
 }
 
 module.exports = {
+  checkSubscriptions,
   isSubscribed,
   registerMenuHandlers,
   resolveBotUsername,
   sendGroupMenu,
   sendPrivateMenu,
   sendSubscriptionGate,
+  startSubscriptionFlow,
   verifySubscriptions,
 };
