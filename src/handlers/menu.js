@@ -19,6 +19,27 @@ const {
   logSubscriptionFailures,
 } = require('../services/subscriptions');
 
+const TELEGRAM_DELETE_BATCH_SIZE = 100;
+
+async function clearRecentPrivateMessages(ctx, logger = console) {
+  const latestMessageId = ctx.message?.message_id;
+  if (ctx.chat?.type !== 'private' || !latestMessageId) return;
+
+  const firstMessageId = Math.max(1, latestMessageId - TELEGRAM_DELETE_BATCH_SIZE + 1);
+  const messageIds = Array.from(
+    { length: latestMessageId - firstMessageId + 1 },
+    (_, index) => firstMessageId + index,
+  );
+
+  try {
+    await ctx.api.deleteMessages({ chat_id: ctx.chatId, message_ids: messageIds });
+  } catch (error) {
+    // Telegram does not allow every message to be deleted (for example, messages
+    // that are too old). A cleanup failure must not prevent /start from working.
+    logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${error.message}`);
+  }
+}
+
 async function resolveBotUsername(ctx, cache) {
   if (!cache.username) cache.username = (await ctx.api.getMe()).username;
   return cache.username;
@@ -146,8 +167,9 @@ function registerMenuHandlers(bot, {
 }) {
   const cache = {};
 
-  bot.command('start', (ctx) => {
+  bot.command('start', async (ctx) => {
     if (ctx.chat?.type !== 'private') return undefined;
+    await clearRecentPrivateMessages(ctx);
     return startSubscriptionFlow(ctx, config);
   });
   bot.on('callback_query', (ctx, next) => {
@@ -193,6 +215,7 @@ function registerMenuHandlers(bot, {
 }
 
 module.exports = {
+  clearRecentPrivateMessages,
   checkSubscriptions,
   createSubscriptionGuard,
   isSubscribed,
