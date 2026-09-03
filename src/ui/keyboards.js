@@ -1,6 +1,7 @@
 const { InlineKeyboardBuilder } = require('node-telegram-bot-api');
 
 const { DEFAULT_LINKS } = require('../config/telegram');
+const { formatStoreName } = require('./messages');
 
 const BUTTON_STYLES = Object.freeze({
   danger: 'danger',
@@ -48,8 +49,8 @@ function buildPrivateMenu(links = DEFAULT_LINKS) {
 function buildStoreSelectionMenu(stores, links = DEFAULT_LINKS) {
   const keyboard = new InlineKeyboardBuilder();
 
-  stores.forEach(({ storeNo, storeName }, index) => {
-    keyboard.text(String(storeName).trim(), `live_store:${storeNo}`);
+  stores.forEach((store, index) => {
+    keyboard.text(formatStoreName(store), `live_store:${store.storeNo}`);
     if (index % 2 === 1) keyboard.row();
   });
 
