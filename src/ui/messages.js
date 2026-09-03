@@ -35,13 +35,18 @@ function formatLiveValue(value) {
 
 function formatChojoongCreatedAt(value) {
   if (!value) return '';
-  if (!(value instanceof Date)) return String(value).trim().replace('T', ' ').slice(0, 16);
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return '';
+    return `${value.getMonth() + 1}월 ${value.getDate()}일 ${value.getHours()}시 ${value.getMinutes()}분`;
+  }
 
-  const pad = (number) => String(number).padStart(2, '0');
-  return [
-    `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`,
-    `${pad(value.getHours())}:${pad(value.getMinutes())}`,
-  ].join(' ');
+  const match = String(value).trim().match(
+    /^\d{4}-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{1,2})/,
+  );
+  if (!match) return String(value).trim();
+
+  const [, month, day, hour, minute] = match;
+  return `${Number(month)}월 ${Number(day)}일 ${Number(hour)}시 ${Number(minute)}분 기준`;
 }
 
 function formatChojoongInformation({ message, createdAt }) {
