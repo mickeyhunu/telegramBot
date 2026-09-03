@@ -190,7 +190,7 @@ function registerMenuHandlers(bot, {
   });
   bot.on('callback_query', (ctx, next) => {
     if (ctx.chat?.type !== 'private') return next();
-    const match = /^live_(choice|search|waiting|entry):(\d+)$/.exec(ctx.callbackQuery?.data || '');
+    const match = /^live_(choice|search|waiting|entry|workers):(\d+)$/.exec(ctx.callbackQuery?.data || '');
     if (!match) return next();
 
     return requireSubscriptions(ctx, async () => {
@@ -203,7 +203,9 @@ function registerMenuHandlers(bot, {
             show_alert: true,
           });
         }
-        const information = await loadLiveInformation(chatbotPool, action, store);
+        const information = action === 'workers'
+          ? undefined
+          : await loadLiveInformation(chatbotPool, action, store);
         return editPrivateMenu(
           ctx,
           liveInformationMessage(store, action, information),

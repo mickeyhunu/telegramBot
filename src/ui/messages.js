@@ -121,12 +121,15 @@ function liveInformationMessage(store, action, information) {
     choice: '💬 초이스톡',
     search: '🔎 초중',
     waiting: '🚪 룸/웨이팅',
+    workers: '👥 출근자정보',
   };
   let details;
 
   if (action === 'entry') return entryInformationMessage(information);
 
-  if (action === 'search') {
+  if (action === 'workers') {
+    details = '출근자 정보 프리미엄 기능은 미드나잇 맨즈 회원에게만 제공됩니다.';
+  } else if (action === 'search') {
     details = information.length
       ? information.map((item) => formatChojoongInformation(item)).join('\n')
       : '준비중입니다...';
