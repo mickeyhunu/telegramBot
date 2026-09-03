@@ -33,6 +33,22 @@ function formatLiveValue(value) {
   return String(value).trim();
 }
 
+function formatChojoongCreatedAt(value) {
+  if (!value) return '';
+  if (!(value instanceof Date)) return String(value).trim().replace('T', ' ').slice(0, 16);
+
+  const pad = (number) => String(number).padStart(2, '0');
+  return [
+    `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`,
+    `${pad(value.getHours())}:${pad(value.getMinutes())}`,
+  ].join(' ');
+}
+
+function formatChojoongInformation({ message, createdAt }) {
+  const timestamp = formatChojoongCreatedAt(createdAt);
+  return [message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n');
+}
+
 function liveInformationMessage(store, action, information) {
   const headers = {
     choice: '💬 초이스톡',
@@ -42,7 +58,9 @@ function liveInformationMessage(store, action, information) {
   let details;
 
   if (action === 'search') {
-    details = information.length ? information.join('\n') : '준비중입니다...';
+    details = information.length
+      ? information.map(formatChojoongInformation).join('\n\n')
+      : '준비중입니다...';
   } else if (action === 'waiting') {
     const roomInfo = String(information.roomInfo) === '999' ? '여유' : formatLiveValue(information.roomInfo);
     details = `룸 : ${roomInfo}\n웨이팅 : ${formatLiveValue(information.waitInfo)}`;
@@ -137,6 +155,8 @@ function groupGuideCaption() {
 }
 
 module.exports = {
+  formatChojoongCreatedAt,
+  formatChojoongInformation,
   formatStoreName,
   formatPartnerBusinessName,
   groupGuideCaption,

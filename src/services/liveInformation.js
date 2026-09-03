@@ -2,17 +2,20 @@ const { getChoiceMessage } = require('./choiceMessages');
 
 async function getChojoongMessages(databasePool, storeNo) {
   const [rows] = await databasePool.execute(
-    `SELECT chojoongMsg
+    `SELECT chojoongMsg, createdAt
      FROM LIVE_CHOJOONG_HISTORY
      WHERE storeNo = ?
-     ORDER BY chojoongNo DESC
+     ORDER BY createdAt DESC
      LIMIT 5`,
     [storeNo],
   );
 
   return rows
-    .map(({ chojoongMsg }) => String(chojoongMsg || '').trim())
-    .filter(Boolean);
+    .map(({ chojoongMsg, createdAt }) => ({
+      message: String(chojoongMsg || '').trim(),
+      createdAt,
+    }))
+    .filter(({ message }) => Boolean(message));
 }
 
 async function getLiveInformation(databasePool, action, store) {
