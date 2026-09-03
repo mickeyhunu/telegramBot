@@ -36,9 +36,9 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     }))
     : [{ title: '제휴업체 전체보기', url: links.partners }];
   const businessLinks = businesses.map(({ label, title, telegramId, url }) => {
-    const prefix = label ? `${escapeHtml(label)} ` : '';
+    const linkText = [label, title].filter(Boolean).join(' ');
     const mention = telegramId ? `... @${escapeHtml(telegramId)}` : '';
-    return `• ${prefix}<a href="${escapeHtml(url)}">${escapeHtml(title)}</a>${mention}`;
+    return `<a href="${escapeHtml(url)}">${escapeHtml(linkText)}</a>${mention}`;
   });
 
   return [
