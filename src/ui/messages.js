@@ -7,8 +7,12 @@ function privateGuideMessage() {
   ].join('\n');
 }
 
-function liveGuideMessage() {
-  return '🔴 실시간 LIVE\n\n원하시는 서비스를 선택해 주세요.';
+function storeSelectionMessage() {
+  return '🔴 실시간 LIVE\n\n실시간 정보를 확인할 가게를 선택해주세요.';
+}
+
+function liveGuideMessage(storeName) {
+  return `🔴 실시간 LIVE\n\n🏪 ${storeName}\n원하시는 서비스를 선택해 주세요.`;
 }
 
 function escapeHtml(value) {
@@ -93,4 +97,5 @@ module.exports = {
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,
+  storeSelectionMessage,
 };

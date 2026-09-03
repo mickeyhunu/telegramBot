@@ -45,17 +45,31 @@ function buildPrivateMenu(links = DEFAULT_LINKS) {
   return colorize(addFixedLinks(keyboard, links), links);
 }
 
-function buildLiveMenu(links = DEFAULT_LINKS) {
+function buildStoreSelectionMenu(stores, links = DEFAULT_LINKS) {
+  const keyboard = new InlineKeyboardBuilder();
+
+  stores.forEach(({ storeNo, storeName }, index) => {
+    keyboard.text(String(storeName).trim(), `live_store:${storeNo}`);
+    if (index % 2 === 1) keyboard.row();
+  });
+
+  keyboard.row().text('⬅️ 처음으로', 'menu_home');
+  return colorize(addFixedLinks(keyboard, links), links);
+}
+
+function buildLiveMenu(storeNo, links = DEFAULT_LINKS) {
+  const callbackSuffix = `:${storeNo}`;
   const keyboard = new InlineKeyboardBuilder()
-    .text('💬 초이스톡', 'live_choice')
-    .text('🔎 초중', 'live_search')
+    .text('💬 초이스톡', `live_choice${callbackSuffix}`)
+    .text('🔎 초중', `live_search${callbackSuffix}`)
     .row()
-    .text('🚪 룸/웨이팅', 'live_waiting')
-    .text('📝 엔트리', 'live_entry')
+    .text('🚪 룸/웨이팅', `live_waiting${callbackSuffix}`)
+    .text('📝 엔트리', `live_entry${callbackSuffix}`)
     .row()
-    .text('👥 출근자정보', 'live_workers')
+    .text('👥 출근자정보', `live_workers${callbackSuffix}`)
     .row()
-    .text('⬅️ 처음으로', 'menu_home');
+    .text('⬅️ 가게 다시 선택', 'menu_live')
+    .text('🏠 처음으로', 'menu_home');
 
   return colorize(addFixedLinks(keyboard, links), links);
 }
@@ -101,6 +115,7 @@ module.exports = {
   buildLiveMenu,
   buildPartnersMenu,
   buildPrivateMenu,
+  buildStoreSelectionMenu,
   buildStartMenu,
   buildSubscriptionMenu,
   buildWelcomeButton,

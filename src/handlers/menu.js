@@ -3,6 +3,7 @@ const {
   buildLiveMenu,
   buildPartnersMenu,
   buildPrivateMenu,
+  buildStoreSelectionMenu,
   buildSubscriptionMenu,
 } = require('../ui/keyboards');
 const {
@@ -11,6 +12,7 @@ const {
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,
+  storeSelectionMessage,
 } = require('../ui/messages');
 const {
   checkSubscriptions,
@@ -19,6 +21,7 @@ const {
   logSubscriptionFailures,
 } = require('../services/subscriptions');
 const { getActiveBusinessAds } = require('../services/businessAds');
+const { getStore, getStores } = require('../services/stores');
 
 const TELEGRAM_DELETE_BATCH_SIZE = 100;
 
@@ -171,6 +174,9 @@ function registerMenuHandlers(bot, {
   requireSubscriptions = (_ctx, next) => next(),
   businessAdsPool,
   loadActiveBusinessAds = getActiveBusinessAds,
+  chatbotPool,
+  loadStore = getStore,
+  loadStores = getStores,
 }) {
   const cache = {};
 
@@ -190,7 +196,26 @@ function registerMenuHandlers(bot, {
 
     return requireSubscriptions(ctx, async () => {
       if (data === 'menu_live') {
-        return editPrivateMenu(ctx, liveGuideMessage(), buildLiveMenu(config.links));
+        try {
+          const stores = await loadStores(chatbotPool);
+          if (!stores.length) {
+            return ctx.answerCallbackQuery({
+              text: '등록된 가게가 없습니다.',
+              show_alert: true,
+            });
+          }
+          return editPrivateMenu(
+            ctx,
+            storeSelectionMessage(),
+            buildStoreSelectionMenu(stores, config.links),
+          );
+        } catch (error) {
+          console.error(`가게정보 조회 실패: ${error.message}`);
+          return ctx.answerCallbackQuery({
+            text: '가게정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+            show_alert: true,
+          });
+        }
       }
       if (data === 'menu_partners') {
         try {
@@ -210,6 +235,34 @@ function registerMenuHandlers(bot, {
         }
       }
       return editPrivateMenu(ctx, privateGuideMessage(), buildPrivateMenu(config.links));
+    });
+  });
+  bot.on('callback_query', (ctx, next) => {
+    if (ctx.chat?.type !== 'private') return next();
+    const match = /^live_store:(\d+)$/.exec(ctx.callbackQuery?.data || '');
+    if (!match) return next();
+
+    return requireSubscriptions(ctx, async () => {
+      try {
+        const store = await loadStore(chatbotPool, match[1]);
+        if (!store) {
+          return ctx.answerCallbackQuery({
+            text: '선택한 가게정보를 찾을 수 없습니다.',
+            show_alert: true,
+          });
+        }
+        return editPrivateMenu(
+          ctx,
+          liveGuideMessage(store.storeName),
+          buildLiveMenu(store.storeNo, config.links),
+        );
+      } catch (error) {
+        console.error(`가게정보 조회 실패 (${match[1]}): ${error.message}`);
+        return ctx.answerCallbackQuery({
+          text: '가게정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+          show_alert: true,
+        });
+      }
     });
   });
   bot.on('callback_query', (ctx, next) => {
