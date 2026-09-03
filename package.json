@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "telegram:status": "node src/scripts/checkTelegramStatus.js",
-    "test": "node --test"
+    "telegram:status": "node src/scripts/checkTelegramStatus.js"
   },
   "keywords": [],
   "author": "",
