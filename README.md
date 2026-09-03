@@ -10,6 +10,8 @@
   - 그룹에서 `/chatid`를 보내 현재 채팅 ID를 확인할 수 있습니다.
 - `MNMS_MYSQL_*`: `mnms_prod` 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: `chatBot_DB` 데이터베이스 접속 정보
+- `TELEGRAM_GUIDE_IMAGE`: 그룹 안내에 사용할 Telegram `file_id` 또는 공개 이미지 URL
+- `CHANNEL_URL`, `LIVE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 각 안내 버튼의 이동 주소
 
 ```bash
 npm install
@@ -35,3 +37,22 @@ Privacy Mode를 비활성화해야 합니다. 봇에는 메시지 전송과 사�
 조회해 답장합니다. 개인 대화방이나 다른 그룹에서는 초이스톡 메시지에 답장하지
 않습니다. Telegram 그룹에서 일반 메시지를 수신하려면 BotFather의 `/setprivacy`에서
 Privacy Mode를 꺼야 합니다.
+
+## 안내 메뉴
+
+- 그룹에서 `/메뉴`를 입력하면 **사진 + 안내 문구 + 바로가기 버튼**으로 구성된 안내를
+  전송합니다. `TELEGRAM_GUIDE_IMAGE`가 없으면 그룹 대표 사진을 사용하고, 대표 사진도
+  없으면 안내 문구와 버튼만 전송합니다.
+- 봇 개인 메시지에서 `/start`, `/메뉴`, `/채널안내`를 입력하면 채널, LIVE, 제휴업체,
+  문의하기 메뉴를 표시합니다.
+
+## 파일 구조
+
+```text
+src/
+├── bot.js                 # 봇 생성 및 기능 조립
+├── config/telegram.js     # 그룹 판별과 환경 설정
+├── handlers/              # 메뉴, 시스템, 가입 환영 이벤트
+├── services/              # 데이터베이스와 초이스톡 조회
+└── ui/                    # 안내 문구와 인라인 키보드
+```
