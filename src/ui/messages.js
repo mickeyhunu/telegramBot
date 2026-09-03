@@ -3,8 +3,18 @@ function privateGuideMessage() {
     '🌙 미드나잇맨즈 공식 안내',
     '',
     '원하시는 메뉴를 아래 버튼에서 선택해 주세요.',
-    '최신 소식은 「채널 안내」에서 확인할 수 있습니다.',
+    '실시간 LIVE와 제휴업체 안내를 이용할 수 있습니다.',
   ].join('\n');
+}
+
+function liveGuideMessage() {
+  return '🔴 실시간 LIVE\n\n원하시는 서비스를 선택해 주세요.';
+}
+
+function partnersGuideMessage(hasBusinesses) {
+  return hasBusinesses
+    ? '🤝 제휴업체 안내\n\n이용하실 제휴업체를 선택해 주세요.'
+    : '🤝 제휴업체 안내\n\n미드나잇맨즈 홈페이지에서 제휴업체 목록을 확인해 주세요.';
 }
 
 function subscriptionMessage() {
@@ -26,4 +36,10 @@ function groupGuideCaption() {
   ].join('\n');
 }
 
-module.exports = { groupGuideCaption, privateGuideMessage, subscriptionMessage };
+module.exports = {
+  groupGuideCaption,
+  liveGuideMessage,
+  partnersGuideMessage,
+  privateGuideMessage,
+  subscriptionMessage,
+};

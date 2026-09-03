@@ -14,7 +14,9 @@
 - `TELEGRAM_PRIVATE_GUIDE_IMAGE`: 개인 `/start` 안내 이미지의 로컬 경로 (기본값 `assets/private-welcome.jpg`)
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
 - `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
-- `CHANNEL_URL`, `LIVE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 각 안내 버튼의 이동 주소
+- `WEBSITE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 홈페이지, 제휴업체, 문의 버튼의 이동 주소
+- `PARTNER_BUSINESSES`: `업체명|URL` 형식의 제휴업체를 쉼표로 구분한 목록
+  (예: `A업체|https://example.com/a,B업체|https://example.com/b`)
 
 ```bash
 npm install
@@ -77,8 +79,10 @@ Privacy Mode를 꺼야 합니다.
   채팅 ID는 초대 링크가 아니라 `-100...` 형식의 실제 숫자 ID를 설정하고, 봇을 관리자로
   추가한 뒤 프로세스를 다시 시작해야 합니다. 어느 한 방의 설정만 잘못되어도 이제 해당
   방 이름을 오류 메시지와 서버 로그에서 확인할 수 있습니다.
-- 개인 메시지에서 `/메뉴`, `/채널안내`를 입력하면 기존 채널, LIVE, 제휴업체,
-  문의하기 메뉴를 표시합니다. 개인 메뉴, 그룹 메뉴, 초이스톡 등 사용자 기능은 실행할
+- 개인 메시지에서 `/메뉴`, `/채널안내`를 입력하면 LIVE와 제휴업체 메뉴를 표시합니다.
+  LIVE를 누르면 초이스톡, 초중, 룸/웨이팅, 엔트리, 출근자정보 버튼으로 이동합니다.
+  홈페이지와 문의하기 버튼은 모든 메뉴 단계에 고정으로 표시됩니다. 개인 메뉴, 그룹
+  메뉴, 초이스톡 등 사용자 기능은 실행할
   때마다 두 방의 가입 상태를 새로 조회합니다. 이용 도중 어느 한 방이라도 구독을
   취소했거나 가입 상태 조회에 실패하면 해당 기능을 실행하지 않고 초기 구독 안내를
   다시 표시합니다.
