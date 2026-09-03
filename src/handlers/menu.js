@@ -9,6 +9,7 @@ const {
 const {
   groupGuideCaption,
   liveGuideMessage,
+  liveInformationMessage,
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,
@@ -22,6 +23,7 @@ const {
 } = require('../services/subscriptions');
 const { getActiveBusinessAds } = require('../services/businessAds');
 const { getStore, getStores } = require('../services/stores');
+const { getLiveInformation } = require('../services/liveInformation');
 
 const TELEGRAM_DELETE_BATCH_SIZE = 100;
 
@@ -177,6 +179,7 @@ function registerMenuHandlers(bot, {
   chatbotPool,
   loadStore = getStore,
   loadStores = getStores,
+  loadLiveInformation = getLiveInformation,
 }) {
   const cache = {};
 
@@ -184,6 +187,36 @@ function registerMenuHandlers(bot, {
     if (ctx.chat?.type !== 'private') return undefined;
     await clearRecentPrivateMessages(ctx);
     return startSubscriptionFlow(ctx, config);
+  });
+  bot.on('callback_query', (ctx, next) => {
+    if (ctx.chat?.type !== 'private') return next();
+    const match = /^live_(choice|search|waiting):(\d+)$/.exec(ctx.callbackQuery?.data || '');
+    if (!match) return next();
+
+    return requireSubscriptions(ctx, async () => {
+      const [, action, storeNo] = match;
+      try {
+        const store = await loadStore(chatbotPool, storeNo);
+        if (!store) {
+          return ctx.answerCallbackQuery({
+            text: '선택한 가게정보를 찾을 수 없습니다.',
+            show_alert: true,
+          });
+        }
+        const information = await loadLiveInformation(chatbotPool, action, store);
+        return editPrivateMenu(
+          ctx,
+          liveInformationMessage(store, action, information),
+          buildLiveMenu(store.storeNo, config.links),
+        );
+      } catch (error) {
+        console.error(`LIVE 정보 조회 실패 (${action}:${storeNo}): ${error.message}`);
+        return ctx.answerCallbackQuery({
+          text: 'LIVE 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+          show_alert: true,
+        });
+      }
+    });
   });
   bot.on('callback_query', (ctx, next) => {
     if (ctx.callbackQuery?.data !== 'verify_subscriptions' || ctx.chat?.type !== 'private') return next();

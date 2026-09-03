@@ -18,7 +18,47 @@ function formatStoreName({ storeName, storeEmoji }) {
 }
 
 function liveGuideMessage(store) {
-  return `🔴 실시간 LIVE\n\n${formatStoreName(store)}\n원하시는 서비스를 선택해 주세요.`;
+  return [
+    '🔴 실시간 LIVE',
+    '',
+    formatStoreName(store),
+    `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
+    '',
+    '원하시는 서비스를 선택해 주세요.',
+  ].join('\n');
+}
+
+function formatLiveValue(value) {
+  if (value === null || value === undefined || String(value).trim() === '') return '준비중입니다...';
+  return String(value).trim();
+}
+
+function liveInformationMessage(store, action, information) {
+  const headers = {
+    choice: '💬 초이스톡',
+    search: '🔎 초중',
+    waiting: '🚪 룸/웨이팅',
+  };
+  let details;
+
+  if (action === 'search') {
+    details = information.length ? information.join('\n') : '준비중입니다...';
+  } else if (action === 'waiting') {
+    const roomInfo = String(information.roomInfo) === '999' ? '여유' : formatLiveValue(information.roomInfo);
+    details = `룸 : ${roomInfo}\n웨이팅 : ${formatLiveValue(information.waitInfo)}`;
+  } else {
+    details = formatLiveValue(information);
+  }
+
+  return [
+    '🔴 실시간 LIVE',
+    '',
+    formatStoreName(store),
+    `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
+    '',
+    headers[action],
+    details,
+  ].join('\n');
 }
 
 function escapeHtml(value) {
@@ -101,6 +141,7 @@ module.exports = {
   formatPartnerBusinessName,
   groupGuideCaption,
   liveGuideMessage,
+  liveInformationMessage,
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,

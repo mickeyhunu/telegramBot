@@ -87,6 +87,10 @@ Privacy Mode를 꺼야 합니다.
   LIVE를 누르면 `chatBot_DB.INFO_STORE`에 등록된 가게를 먼저 선택합니다. 가게 선택
   버튼과 선택 후 안내에는 각 행의 `storeEmoji`가 가게명 앞에 표시되며, 선택한 가게의
   초이스톡, 초중, 룸/웨이팅, 엔트리, 출근자정보 버튼으로 이동합니다.
+  가게 선택 후에는 `storeAddress`도 함께 표시됩니다. 초이스톡은 `INFO_CHOICE`의
+  `choiceMsg`, 초중은 `LIVE_CHOJOONG_HISTORY`의 최신 `chojoongMsg` 최대 5개를 표시하고,
+  룸/웨이팅은 `INFO_STORE`의 `roomInfo`와 `waitInfo`를 표시합니다. `roomInfo`가 `999`이면
+  룸 상태는 `여유`로 안내합니다.
   홈페이지와 문의하기 버튼은 모든 메뉴 단계에 고정으로 표시됩니다. 개인 메뉴, 그룹
   메뉴, 초이스톡 등 사용자 기능은 실행할
   때마다 두 방의 가입 상태를 새로 조회합니다. 이용 도중 어느 한 방이라도 구독을
