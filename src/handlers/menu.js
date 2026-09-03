@@ -115,16 +115,13 @@ async function verifySubscriptions(ctx, config) {
   await ctx.answerCallbackQuery({ text: '구독이 확인되었습니다.' });
   const gateMessage = ctx.callbackQuery?.message;
   if (gateMessage?.message_id) {
-    try {
-      await ctx.api.deleteMessage({
-        chat_id: gateMessage.chat?.id || ctx.chatId,
-        message_id: gateMessage.message_id,
-      });
-    } catch (error) {
-      console.error('기존 구독 확인 메시지 삭제 실패:', error);
-    }
+    await ctx.api.editMessageText({
+      chat_id: gateMessage.chat?.id || ctx.chatId,
+      message_id: gateMessage.message_id,
+      text: privateGuideMessage(),
+      reply_markup: buildPrivateMenu(config.links),
+    });
   }
-  await sendPrivateMenu(ctx, config);
 }
 
 async function sendGroupMenu(ctx, config, botUsername) {
