@@ -90,8 +90,9 @@ Privacy Mode를 꺼야 합니다.
   다시 표시합니다.
 - 제휴업체 안내는 `mnms_prod.business_ads`에서 `is_active = 1`인 업체를 실시간으로
   조회합니다. 메시지 본문에는 `district` 끝의 `구`를 제거한 지역명과 `business_name`을
-  대괄호로 묶고, 링크가 적용된 `title` 뒤에 `... @telegram_id`를 표시합니다
-  (예: `[강남 달리는토끼] 제목... @ID`). 링크는 `/business-info/{id}` 상세 페이지로
+  대괄호로 묶어 상세 페이지 링크를 적용하고, `manager_name`과 담당자의
+  `telegram_id`를 표시합니다. 텔레그램 ID가 없으면 `contact`를 대신 표시합니다.
+  업체 사이에는 구분선을 표시하며 링크는 `/business-info/{id}` 상세 페이지로
   연결합니다. 표시 순서는 `PREMIUM`, `PLUS`, 기타 플랜 순이며, 같은 플랜에서는 최근
   점프 순, 점프 시간도 같으면 최신 ID 순입니다.
 - 인라인 버튼은 기본적으로 파란색(`primary`)이며, 항상 표시되는 홈페이지/문의하기는
