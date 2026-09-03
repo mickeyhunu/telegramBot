@@ -203,9 +203,7 @@ function registerMenuHandlers(bot, {
             show_alert: true,
           });
         }
-        const information = action === 'workers'
-          ? undefined
-          : await loadLiveInformation(chatbotPool, action, store);
+        const information = await loadLiveInformation(chatbotPool, action, store);
         return editPrivateMenu(
           ctx,
           liveInformationMessage(store, action, information),
