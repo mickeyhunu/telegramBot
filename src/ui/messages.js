@@ -28,23 +28,35 @@ function formatPartnerBusinessName({ district, business_name: businessName }) {
 function partnersGuideMessage(partnerBusinesses = [], links) {
   const baseUrl = links.partners.replace(/\/$/, '');
   const businesses = partnerBusinesses.length
-    ? partnerBusinesses.map(({ id, title, name, telegram_id: telegramId, url, ...business }) => ({
+    ? partnerBusinesses.map(({
+      id,
+      manager_name: managerName,
+      telegram_id: telegramId,
+      contact,
+      url,
+      ...business
+    }) => ({
       label: formatPartnerBusinessName(business),
-      title: title || name || '',
+      managerName: String(managerName || '').trim(),
       telegramId: String(telegramId || '').trim().replace(/^@+/, ''),
+      contact: String(contact || '').trim(),
       url: url || `${baseUrl}/${encodeURIComponent(id)}`,
     }))
-    : [{ title: '제휴업체 전체보기', url: links.partners }];
-  const businessLinks = businesses.map(({ label, title, telegramId, url }) => {
-    const linkText = [label, title].filter(Boolean).join(' ');
-    const mention = telegramId ? `... @${escapeHtml(telegramId)}` : '';
-    return `<a href="${escapeHtml(url)}">${escapeHtml(linkText)}</a>${mention}`;
-  });
+    : [{ label: '제휴업체 전체보기', url: links.partners }];
+  const businessLinks = businesses.map(({
+    label, managerName, telegramId, contact, url,
+  }) => [
+    `💎<a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`,
+    managerName ? `💎${escapeHtml(managerName)}` : '',
+    (telegramId || contact)
+      ? `👤 담당 ${telegramId ? `@${escapeHtml(telegramId)}` : escapeHtml(contact)}`
+      : '',
+  ].filter(Boolean).join('\n'));
 
   return [
     '🤝 제휴업체 안내',
     '',
-    ...businessLinks,
+    businessLinks.join('\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n'),
   ].join('\n');
 }
 
