@@ -36,6 +36,10 @@ function buildPrivateMenu(links = DEFAULT_LINKS) {
   const keyboard = new InlineKeyboardBuilder()
     .text('🔴 실시간 LIVE', 'menu_live')
     .row()
+    .url('RBTI 검사하기', links.rbti)
+    .row()
+    .url('룸빵 용어사전', links.wiki)
+    .row()
     .text('🤝 제휴업체 안내', 'menu_partners');
 
   return colorize(addFixedLinks(keyboard, links), links);
