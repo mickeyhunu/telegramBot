@@ -12,7 +12,7 @@ async function getActiveBusinessAds(databasePool) {
   if (!databasePool) throw new Error('MNMS 데이터베이스 연결 풀이 필요합니다.');
 
   const [rows] = await databasePool.execute(`
-    SELECT id, district, business_name, manager_name, telegram_id, contact
+    SELECT id, district, business_name, manager_name, telegram_id, manager_contact
     FROM business_ads
     WHERE is_active = 1
     ORDER BY ${BUSINESS_ADS_ORDER}

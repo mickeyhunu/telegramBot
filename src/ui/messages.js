@@ -32,24 +32,24 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
       id,
       manager_name: managerName,
       telegram_id: telegramId,
-      contact,
+      manager_contact: managerContact,
       url,
       ...business
     }) => ({
       label: formatPartnerBusinessName(business),
       managerName: String(managerName || '').trim(),
       telegramId: String(telegramId || '').trim().replace(/^@+/, ''),
-      contact: String(contact || '').trim(),
+      managerContact: String(managerContact || '').trim(),
       url: url || `${baseUrl}/${encodeURIComponent(id)}`,
     }))
     : [{ label: '제휴업체 전체보기', url: links.partners }];
   const businessLinks = businesses.map(({
-    label, managerName, telegramId, contact, url,
+    label, managerName, telegramId, managerContact, url,
   }) => [
-    `💎<a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`,
-    managerName ? `💎${escapeHtml(managerName)}` : '',
-    (telegramId || contact)
-      ? `👤 담당 ${telegramId ? `@${escapeHtml(telegramId)}` : escapeHtml(contact)}`
+    `💎 <a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`,
+    managerName ? `💎 ${escapeHtml(managerName)}` : '',
+    (telegramId || managerContact)
+      ? `👤 담당 ${telegramId ? `@${escapeHtml(telegramId)}` : escapeHtml(managerContact)}`
       : '',
   ].filter(Boolean).join('\n'));
 
