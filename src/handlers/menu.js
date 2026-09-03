@@ -25,11 +25,14 @@ async function clearRecentPrivateMessages(ctx, logger = console) {
   const latestMessageId = ctx.message?.message_id;
   if (ctx.chat?.type !== 'private' || !latestMessageId) return;
 
-  const firstMessageId = Math.max(1, latestMessageId - TELEGRAM_DELETE_BATCH_SIZE + 1);
+  // Keep the /start command itself and clean up only the messages before it.
+  const firstMessageId = Math.max(1, latestMessageId - TELEGRAM_DELETE_BATCH_SIZE);
   const messageIds = Array.from(
-    { length: latestMessageId - firstMessageId + 1 },
+    { length: latestMessageId - firstMessageId },
     (_, index) => firstMessageId + index,
   );
+
+  if (!messageIds.length) return;
 
   try {
     await ctx.api.deleteMessages({ chat_id: ctx.chatId, message_ids: messageIds });
