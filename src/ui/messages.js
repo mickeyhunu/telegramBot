@@ -7,10 +7,6 @@ function privateGuideMessage() {
   ].join('\n');
 }
 
-function privateWelcomeCaption() {
-  return ['🌙 미드나잇맨즈 🌙', '', '유흥 커뮤니티'].join('\n');
-}
-
 function subscriptionMessage() {
   return [
     '📢 **구독자 전용 서비스입니다.**',
@@ -30,4 +26,4 @@ function groupGuideCaption() {
   ].join('\n');
 }
 
-module.exports = { groupGuideCaption, privateGuideMessage, privateWelcomeCaption, subscriptionMessage };
+module.exports = { groupGuideCaption, privateGuideMessage, subscriptionMessage };

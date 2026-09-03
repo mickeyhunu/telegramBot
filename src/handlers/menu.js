@@ -1,11 +1,7 @@
-const { existsSync } = require('node:fs');
-const { resolve } = require('node:path');
-const { fromPath } = require('node-telegram-bot-api/node');
 const { buildGroupMenu, buildPrivateMenu, buildSubscriptionMenu } = require('../ui/keyboards');
 const {
   groupGuideCaption,
   privateGuideMessage,
-  privateWelcomeCaption,
   subscriptionMessage,
 } = require('../ui/messages');
 
@@ -19,17 +15,6 @@ async function sendPrivateMenu(ctx, config) {
 }
 
 async function sendSubscriptionGate(ctx, config) {
-  const imagePath = resolve(config.privateGuideImage);
-  if (existsSync(imagePath)) {
-    await ctx.api.sendPhoto({
-      chat_id: ctx.chatId,
-      photo: await fromPath(imagePath),
-      caption: privateWelcomeCaption(),
-    });
-  } else {
-    await ctx.reply(privateWelcomeCaption());
-  }
-
   await ctx.reply(subscriptionMessage(), {
     parse_mode: 'Markdown',
     reply_markup: buildSubscriptionMenu(config.subscriptionChats),
