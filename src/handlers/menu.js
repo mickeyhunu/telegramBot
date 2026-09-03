@@ -29,10 +29,9 @@ async function sendSubscriptionGate(ctx, config) {
 
 function subscriptionStatusMessage(subscriptionChats, missingChats) {
   const missing = new Set(missingChats);
-  const icons = ['📢', '💬'];
   const statusLines = subscriptionChats.map((chat, index) => {
     const status = missing.has(chat) ? '🔘 구독 확인 안됨' : '🟢 구독중';
-    return `${icons[index] || '•'} ${chat.name} : ${status}`;
+    return `${chat.name} : ${status}`;
   });
 
   return [...statusLines, '', '구독을 확인해 주세요.'].join('\n');

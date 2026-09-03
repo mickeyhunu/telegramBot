@@ -18,8 +18,8 @@ function readTelegramConfig(env = process.env) {
     guideImage: env.TELEGRAM_GUIDE_IMAGE || '',
     privateGuideImage: env.TELEGRAM_PRIVATE_GUIDE_IMAGE || 'assets/private-welcome.jpg',
     subscriptionChats: [
-      { name: '미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
-      { name: '미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
+      { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
+      { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
     ],
     links: {
       website: env.WEBSITE_URL || DEFAULT_LINKS.website,
