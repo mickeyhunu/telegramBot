@@ -1,4 +1,4 @@
-const { formatChojoongCreatedAt } = require('../ui/messages');
+const { formatChojoongInformation } = require('../ui/messages');
 
 const STORE_NUMBERS = Object.freeze({ 달: 1, 엘: 2, 디: 3, 유: 4, 도: 5, 제: 6, 갤: 21 });
 
@@ -28,9 +28,11 @@ function createChoiceMessageHandler({
     return requireSubscriptions(ctx, async () => {
       try {
         const choiceInformation = await getChoiceMessage(databasePool, storeNo);
-        const timestamp = formatChojoongCreatedAt(choiceInformation?.createdAt);
         const response = choiceInformation
-          ? [choiceInformation.message, timestamp && `🕒 ${timestamp}`].filter(Boolean).join('\n')
+          ? formatChojoongInformation({
+            message: choiceInformation.message,
+            createdAt: choiceInformation.createdAt,
+          })
           : '준비중입니다...';
         await ctx.reply(response);
       } catch (error) {
