@@ -31,7 +31,10 @@ async function getTodayEntries(databasePool, storeNo) {
     workerName, mentionCount, insertCount, createdAt,
   }) => ({
     workerName: String(workerName || '').trim(),
-    score: (Number(mentionCount) || 0) * 5 + (Number(insertCount) || 0),
+    score: Math.max(
+      0,
+      (Number(mentionCount) || 0) * 5 +
+      (Number(insertCount) || 0) - 6),
     createdAt,
   })).filter(({ workerName }) => Boolean(workerName));
 }

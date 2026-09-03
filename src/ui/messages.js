@@ -86,11 +86,25 @@ function appendTimestamp(message, value) {
   return [
     message,
     timestamp && LIVE_SECTION_DIVIDER,
-    timestamp && `🕒 ${timestamp}`,
+    timestamp && `🕒 ${timestamp} 기준`,
   ].filter(Boolean).join('\n');
 }
 
-function entryInformationMessage(entries) {
+function formatEntryDate(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return '';
+    return `${value.getMonth() + 1}월 ${value.getDate()}일`;
+  }
+
+  const match = String(value).trim().match(/^\d{4}-(\d{1,2})-(\d{1,2})/);
+  if (!match) return '';
+
+  const [, month, day] = match;
+  return `${Number(month)}월 ${Number(day)}일`;
+}
+
+function entryInformationMessage(store, entries) {
   const namesPerLine = 5;
   const workerLines = [];
   for (let index = 0; index < entries.length; index += namesPerLine) {
@@ -105,7 +119,18 @@ function entryInformationMessage(entries) {
     .slice(0, 5)
     .map(({ workerName, score }, index) => `${index + 1}. ${workerName} 합계 ${score}`);
 
+  const entryDate = formatEntryDate(entries[0]?.createdAt);
+
   return [
+    '🔴 미드나잇맨즈 실시간 LIVE',
+    '',
+    formatStoreName(store),
+    `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
+    '',
+    '📝 엔트리',
+    LIVE_SECTION_DIVIDER,
+    ...(entryDate ? [`🗓 ${entryDate}`] : []),
+    '',
     `총 출근인원 ${entries.length}명`,
     '',
     '엔트리 목록',
@@ -113,6 +138,7 @@ function entryInformationMessage(entries) {
     '',
     '오늘의 인기 멤버 TOP 5',
     popularMembers.length ? popularMembers.join('\n') : '등록된 멤버가 없습니다.',
+    LIVE_SECTION_DIVIDER,
   ].join('\n');
 }
 
@@ -125,11 +151,12 @@ function liveInformationMessage(store, action, information) {
   };
   let details;
 
-  if (action === 'entry') return entryInformationMessage(information);
+  if (action === 'entry') return entryInformationMessage(store, information);
 
   if (action === 'workers') {
     details = [
-      '출근자 정보 프리미엄 기능은 미드나잇 맨즈 회원에게만 제공됩니다.',
+      '출근자 정보 프리미엄 기능은',
+      '미드나잇 맨즈 회원에게만 제공됩니다.',
       '',
       '<a href="https://nightmens.com/login">[미드나잇맨즈 바로가기]</a>',
     ].join('\n');
@@ -243,6 +270,7 @@ module.exports = {
   formatChojoongCreatedAt,
   formatChojoongInformation,
   formatElapsedTime,
+  formatEntryDate,
   formatStoreName,
   formatPartnerBusinessName,
   groupGuideCaption,
