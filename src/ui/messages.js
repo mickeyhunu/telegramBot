@@ -19,17 +19,27 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
+function formatPartnerBusinessName({ district, business_name: businessName }) {
+  const shortDistrict = String(district || '').trim().replace(/구$/, '');
+  const bracketContents = [shortDistrict, businessName].filter(Boolean).join(' ');
+  return bracketContents ? `[${bracketContents}]` : '';
+}
+
 function partnersGuideMessage(partnerBusinesses = [], links) {
   const baseUrl = links.partners.replace(/\/$/, '');
   const businesses = partnerBusinesses.length
-    ? partnerBusinesses.map(({ id, title, name, url }) => ({
-      name: title || name,
+    ? partnerBusinesses.map(({ id, title, name, telegram_id: telegramId, url, ...business }) => ({
+      label: formatPartnerBusinessName(business),
+      title: title || name || '',
+      telegramId: String(telegramId || '').trim().replace(/^@+/, ''),
       url: url || `${baseUrl}/${encodeURIComponent(id)}`,
     }))
-    : [{ name: '제휴업체 전체보기', url: links.partners }];
-  const businessLinks = businesses.map(({ name, url }) => (
-    `• <a href="${escapeHtml(url)}">${escapeHtml(name)}</a>`
-  ));
+    : [{ title: '제휴업체 전체보기', url: links.partners }];
+  const businessLinks = businesses.map(({ label, title, telegramId, url }) => {
+    const prefix = label ? `${escapeHtml(label)} ` : '';
+    const mention = telegramId ? `... @${escapeHtml(telegramId)}` : '';
+    return `• ${prefix}<a href="${escapeHtml(url)}">${escapeHtml(title)}</a>${mention}`;
+  });
 
   return [
     '🤝 제휴업체 안내',
@@ -58,6 +68,7 @@ function groupGuideCaption() {
 }
 
 module.exports = {
+  formatPartnerBusinessName,
   groupGuideCaption,
   liveGuideMessage,
   partnersGuideMessage,
