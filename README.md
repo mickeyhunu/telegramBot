@@ -14,7 +14,8 @@
 - `TELEGRAM_PRIVATE_GUIDE_IMAGE`: 개인 `/start` 안내 이미지의 로컬 경로 (기본값 `assets/private-welcome.jpg`)
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
 - `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
-- `WEBSITE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 홈페이지, 제휴업체, 문의 버튼의 이동 주소
+- `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 홈페이지,
+  RBTI 검사, 룸빵 용어사전, 제휴업체, 문의 버튼의 이동 주소
 
 ```bash
 npm install
@@ -82,6 +83,7 @@ Privacy Mode를 꺼야 합니다.
   추가한 뒤 프로세스를 다시 시작해야 합니다. 어느 한 방의 설정만 잘못되어도 이제 해당
   방 이름을 오류 메시지와 서버 로그에서 확인할 수 있습니다.
 - 개인 메시지에서 `/메뉴`, `/채널안내`를 입력하면 LIVE와 제휴업체 메뉴를 표시합니다.
+  LIVE 버튼 아래에서 RBTI 검사와 룸빵 용어사전으로 바로 이동할 수 있습니다.
   LIVE를 누르면 초이스톡, 초중, 룸/웨이팅, 엔트리, 출근자정보 버튼으로 이동합니다.
   홈페이지와 문의하기 버튼은 모든 메뉴 단계에 고정으로 표시됩니다. 개인 메뉴, 그룹
   메뉴, 초이스톡 등 사용자 기능은 실행할
