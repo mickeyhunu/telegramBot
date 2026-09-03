@@ -8,7 +8,7 @@ function privateGuideMessage() {
 }
 
 function storeSelectionMessage() {
-  return '🔴 실시간 LIVE\n\n실시간 정보를 확인할 가게를 선택해주세요.';
+  return '🔴 미드나잇맨즈 실시간 LIVE\n\n실시간 정보를 확인할 가게를 선택해주세요.';
 }
 
 function formatStoreName({ storeName, storeEmoji }) {
@@ -19,7 +19,7 @@ function formatStoreName({ storeName, storeEmoji }) {
 
 function liveGuideMessage(store) {
   return [
-    '🔴 실시간 LIVE',
+    '🔴 미드나잇맨즈 실시간 LIVE',
     '',
     formatStoreName(store),
     `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
@@ -89,7 +89,7 @@ function liveInformationMessage(store, action, information) {
   }
 
   return [
-    '🔴 실시간 LIVE',
+    '🔴 미드나잇맨즈 실시간 LIVE',
     '',
     formatStoreName(store),
     `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
