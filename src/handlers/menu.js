@@ -4,6 +4,12 @@ const {
   privateGuideMessage,
   subscriptionMessage,
 } = require('../ui/messages');
+const {
+  checkSubscriptions,
+  createSubscriptionGuard,
+  isSubscribed,
+  logSubscriptionFailures,
+} = require('../services/subscriptions');
 
 async function resolveBotUsername(ctx, cache) {
   if (!cache.username) cache.username = (await ctx.api.getMe()).username;
@@ -19,35 +25,6 @@ async function sendSubscriptionGate(ctx, config) {
     parse_mode: 'Markdown',
     reply_markup: buildSubscriptionMenu(config.subscriptionChats),
   });
-}
-
-function isSubscribed(member) {
-  return ['creator', 'administrator', 'member'].includes(member?.status)
-    || (member?.status === 'restricted' && member.is_member);
-}
-
-async function checkSubscriptions(api, subscriptionChats, userId) {
-  const results = await Promise.allSettled(subscriptionChats.map(({ chatId }) => (
-    api.getChatMember({ chat_id: chatId, user_id: userId })
-  )));
-
-  return results.reduce((summary, result, index) => {
-    const chat = subscriptionChats[index];
-    if (result.status === 'rejected') {
-      summary.failed.push({ chat, error: result.reason });
-    } else if (!isSubscribed(result.value)) {
-      summary.missing.push(chat);
-    }
-    return summary;
-  }, { failed: [], missing: [] });
-}
-
-function logSubscriptionFailures(failed) {
-  console.error('Telegram 구독 조회 실패:', failed.map(({ chat, error }) => ({
-    chat: chat.name,
-    chatId: chat.chatId,
-    error: error instanceof Error ? error.message : String(error),
-  })));
 }
 
 function subscriptionStatusMessage(subscriptionChats, missingChats) {
@@ -148,7 +125,11 @@ async function sendGroupMenu(ctx, config, botUsername) {
   await ctx.reply(groupGuideCaption(), options);
 }
 
-function registerMenuHandlers(bot, { config, isTargetGroup }) {
+function registerMenuHandlers(bot, {
+  config,
+  isTargetGroup,
+  requireSubscriptions = (_ctx, next) => next(),
+}) {
   const cache = {};
 
   bot.command('start', (ctx) => {
@@ -160,15 +141,20 @@ function registerMenuHandlers(bot, { config, isTargetGroup }) {
     return verifySubscriptions(ctx, config);
   });
   bot.hears(/^\/(?:채널안내|메뉴)(?:@\w+)?\s*$/, async (ctx) => {
-    if (ctx.chat?.type === 'private') return sendPrivateMenu(ctx, config);
+    if (ctx.chat?.type === 'private') {
+      return requireSubscriptions(ctx, () => sendPrivateMenu(ctx, config));
+    }
     if (!isTargetGroup(ctx.chat)) return undefined;
-    const username = await resolveBotUsername(ctx, cache);
-    return sendGroupMenu(ctx, config, username);
+    return requireSubscriptions(ctx, async () => {
+      const username = await resolveBotUsername(ctx, cache);
+      return sendGroupMenu(ctx, config, username);
+    });
   });
 }
 
 module.exports = {
   checkSubscriptions,
+  createSubscriptionGuard,
   isSubscribed,
   registerMenuHandlers,
   resolveBotUsername,

@@ -8,7 +8,12 @@ async function getChoiceMessage(databasePool, storeNo) {
   return rows[0]?.choiceMsg || null;
 }
 
-function createChoiceMessageHandler({ databasePool, isAllowedChat, logger = console }) {
+function createChoiceMessageHandler({
+  databasePool,
+  isAllowedChat,
+  requireSubscriptions = (_ctx, next) => next(),
+  logger = console,
+}) {
   if (!databasePool) throw new Error('CHATBOT 데이터베이스 연결 풀이 필요합니다.');
   if (!isAllowedChat) throw new Error('초이스톡 허용 채팅 확인 함수가 필요합니다.');
 
@@ -17,14 +22,16 @@ function createChoiceMessageHandler({ databasePool, isAllowedChat, logger = cons
     const storeNo = STORE_NUMBERS[ctx.message?.text?.trim()];
     if (!storeNo) return next();
 
-    try {
-      const choiceMessage = await getChoiceMessage(databasePool, storeNo);
-      await ctx.reply(choiceMessage || '준비중입니다...');
-    } catch (error) {
-      logger.error(`초이스톡 조회 실패 (${storeNo}): ${error.message}`);
-      await ctx.reply('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
-    }
-    return next();
+    return requireSubscriptions(ctx, async () => {
+      try {
+        const choiceMessage = await getChoiceMessage(databasePool, storeNo);
+        await ctx.reply(choiceMessage || '준비중입니다...');
+      } catch (error) {
+        logger.error(`초이스톡 조회 실패 (${storeNo}): ${error.message}`);
+        await ctx.reply('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+      return next();
+    });
   };
 }
 
