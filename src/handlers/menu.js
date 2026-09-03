@@ -210,6 +210,9 @@ function registerMenuHandlers(bot, {
           ctx,
           liveInformationMessage(store, action, information),
           buildLiveMenu(store.storeNo, config.links),
+          action === 'workers'
+            ? { parse_mode: 'HTML', link_preview_options: { is_disabled: true } }
+            : undefined,
         );
       } catch (error) {
         console.error(`LIVE 정보 조회 실패 (${action}:${storeNo}): ${error.message}`);

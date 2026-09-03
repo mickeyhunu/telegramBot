@@ -128,7 +128,11 @@ function liveInformationMessage(store, action, information) {
   if (action === 'entry') return entryInformationMessage(information);
 
   if (action === 'workers') {
-    details = '출근자 정보 프리미엄 기능은 미드나잇 맨즈 회원에게만 제공됩니다.';
+    details = [
+      '출근자 정보 프리미엄 기능은 미드나잇 맨즈 회원에게만 제공됩니다.',
+      '',
+      '<a href="https://nightmens.com/login">[미드나잇맨즈 바로가기]</a>',
+    ].join('\n');
   } else if (action === 'search') {
     details = information.length
       ? information.map((item) => formatChojoongInformation(item)).join('\n')
@@ -148,8 +152,10 @@ function liveInformationMessage(store, action, information) {
   return [
     '🔴 미드나잇맨즈 실시간 LIVE',
     '',
-    formatStoreName(store),
-    `📍 ${String(store.storeAddress || '주소 정보 없음').trim()}`,
+    action === 'workers' ? escapeHtml(formatStoreName(store)) : formatStoreName(store),
+    `📍 ${action === 'workers'
+      ? escapeHtml(String(store.storeAddress || '주소 정보 없음').trim())
+      : String(store.storeAddress || '주소 정보 없음').trim()}`,
     '',
     headers[action],
     LIVE_SECTION_DIVIDER,
