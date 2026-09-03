@@ -30,7 +30,24 @@ function buildWelcomeButton(links) {
   return new InlineKeyboardBuilder().url('미드나잇맨즈 바로가기', links.website).build();
 }
 
+function buildSubscriptionMenu(subscriptionChats) {
+  const [announcement, community] = subscriptionChats;
+  return new InlineKeyboardBuilder()
+    .url(announcement.name, announcement.url)
+    .row()
+    .url(community.name, community.url)
+    .row()
+    .text('구독 완료했어요', 'verify_subscriptions')
+    .build();
+}
+
 // Backward-compatible name used by the previous entry point.
 const buildStartMenu = (links = DEFAULT_LINKS) => buildPrivateMenu(links);
 
-module.exports = { buildGroupMenu, buildPrivateMenu, buildStartMenu, buildWelcomeButton };
+module.exports = {
+  buildGroupMenu,
+  buildPrivateMenu,
+  buildStartMenu,
+  buildSubscriptionMenu,
+  buildWelcomeButton,
+};

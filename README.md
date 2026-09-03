@@ -11,6 +11,9 @@
 - `MNMS_MYSQL_*`: `mnms_prod` 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: `chatBot_DB` 데이터베이스 접속 정보
 - `TELEGRAM_GUIDE_IMAGE`: 그룹 안내에 사용할 Telegram `file_id` 또는 공개 이미지 URL
+- `TELEGRAM_PRIVATE_GUIDE_IMAGE`: 개인 `/start` 안내 이미지의 로컬 경로 (기본값 `assets/private-welcome.jpg`)
+- `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
+- `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
 - `CHANNEL_URL`, `LIVE_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 각 안내 버튼의 이동 주소
 
 ```bash
@@ -43,7 +46,16 @@ Privacy Mode를 꺼야 합니다.
 - 그룹에서 `/메뉴`를 입력하면 **사진 + 안내 문구 + 바로가기 버튼**으로 구성된 안내를
   전송합니다. `TELEGRAM_GUIDE_IMAGE`가 없으면 그룹 대표 사진을 사용하고, 대표 사진도
   없으면 안내 문구와 버튼만 전송합니다.
-- 봇 개인 메시지에서 `/start`, `/메뉴`, `/채널안내`를 입력하면 채널, LIVE, 제휴업체,
+- 봇 개인 메시지에서 `/start`를 입력하면 브랜드 이미지와 공지방/소통방 구독 안내를
+  표시합니다. Telegram은 사용자가 봇을 열기만 했을 때는 업데이트를 보내지 않으므로
+  첫 안내는 `/start` 시점에 전송됩니다.
+- `assets/private-welcome.jpg`에 이미지를 추가하면 자동으로 사용합니다. 파일이 없으면
+  안내 문구만 전송합니다.
+- `구독 완료했어요`를 누르면 두 채널의 가입 상태를 모두 확인한 후 기존 개인 메뉴를
+  표시합니다. 정확한 확인을 위해 봇을 두 채널의 관리자로 추가하고 두
+  `TELEGRAM_*_CHAT_ID`를 반드시 설정해야 합니다. 비공개 초대 링크만으로는 Bot API가
+  채팅 ID를 알아낼 수 없습니다.
+- 개인 메시지에서 `/메뉴`, `/채널안내`를 입력하면 기존 채널, LIVE, 제휴업체,
   문의하기 메뉴를 표시합니다.
 
 ## 파일 구조
