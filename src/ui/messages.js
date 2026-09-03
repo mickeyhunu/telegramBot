@@ -129,6 +129,8 @@ function liveInformationMessage(store, action, information) {
 
   if (action === 'workers') {
     details = [
+      `[총 ${Number(information) || 0}명의 정보가 있습니다]`,
+      '',
       '출근자 정보 프리미엄 기능은 미드나잇 맨즈 회원에게만 제공됩니다.',
       '',
       '<a href="https://nightmens.com/login">[미드나잇맨즈 바로가기]</a>',
