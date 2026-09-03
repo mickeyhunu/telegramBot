@@ -11,10 +11,31 @@ function liveGuideMessage() {
   return '🔴 실시간 LIVE\n\n원하시는 서비스를 선택해 주세요.';
 }
 
-function partnersGuideMessage(hasBusinesses) {
-  return hasBusinesses
-    ? '🤝 제휴업체 안내\n\n이용하실 제휴업체를 선택해 주세요.'
-    : '🤝 제휴업체 안내\n\n미드나잇맨즈 홈페이지에서 제휴업체 목록을 확인해 주세요.';
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function partnersGuideMessage(partnerBusinesses = [], links) {
+  const baseUrl = links.partners.replace(/\/$/, '');
+  const businesses = partnerBusinesses.length
+    ? partnerBusinesses.map(({ id, title, name, url }) => ({
+      name: title || name,
+      url: url || `${baseUrl}/${encodeURIComponent(id)}`,
+    }))
+    : [{ name: '제휴업체 전체보기', url: links.partners }];
+  const businessLinks = businesses.map(({ name, url }) => (
+    `• <a href="${escapeHtml(url)}">${escapeHtml(name)}</a>`
+  ));
+
+  return [
+    '🤝 제휴업체 안내',
+    '',
+    ...businessLinks,
+  ].join('\n');
 }
 
 function subscriptionMessage() {
