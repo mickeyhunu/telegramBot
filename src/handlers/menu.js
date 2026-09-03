@@ -190,7 +190,7 @@ function registerMenuHandlers(bot, {
   });
   bot.on('callback_query', (ctx, next) => {
     if (ctx.chat?.type !== 'private') return next();
-    const match = /^live_(choice|search|waiting):(\d+)$/.exec(ctx.callbackQuery?.data || '');
+    const match = /^live_(choice|search|waiting|entry):(\d+)$/.exec(ctx.callbackQuery?.data || '');
     if (!match) return next();
 
     return requireSubscriptions(ctx, async () => {
