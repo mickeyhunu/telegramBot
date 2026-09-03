@@ -5,7 +5,7 @@ const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
 
 const DEFAULT_LINKS = Object.freeze({
   website: WEBSITE_URL,
-  live: 'https://nightmens.com/play',
+  live: 'https://nightmens.com/play/live',
   rbti: 'https://nightmens.com/play/rbti',
   wiki: 'https://nightmens.com/play/wiki',
   partners: 'https://nightmens.com/business-info',

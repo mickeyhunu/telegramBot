@@ -28,7 +28,7 @@ function colorize(keyboard, links = {}) {
 function addFixedLinks(keyboard, links) {
   return keyboard
     .row()
-    .url('🌐 홈페이지', links.website)
+    .url('🌐 커뮤니티', links.website)
     .url('💬 문의하기', links.support);
 }
 
@@ -36,9 +36,9 @@ function buildPrivateMenu(links = DEFAULT_LINKS) {
   const keyboard = new InlineKeyboardBuilder()
     .text('🔴 실시간 LIVE', 'menu_live')
     .row()
-    .url('RBTI 검사하기', links.rbti)
+    .url('🧠 RBTI 검사하기', links.rbti)
     .row()
-    .url('룸빵 용어사전', links.wiki)
+    .url('📚 룸빵 용어사전', links.wiki)
     .row()
     .text('🤝 제휴업체 안내', 'menu_partners');
 
@@ -74,13 +74,13 @@ function buildGroupMenu(botUsername, links = DEFAULT_LINKS) {
     .url('📢 채널 안내', privateMenuUrl)
     .url('🤝 제휴업체', links.partners)
     .row()
-    .url('🌐 홈페이지', links.website)
+    .url('🌐 커뮤니티', links.website)
     .url('💬 문의하기', links.support), links);
 }
 
 function buildWelcomeButton(links) {
   return colorize(new InlineKeyboardBuilder()
-    .url('🌐 홈페이지', links.website)
+    .url('🌐 커뮤니티', links.website)
     .url('💬 문의하기', links.support), links);
 }
 
