@@ -253,7 +253,7 @@ function registerMenuHandlers(bot, {
         }
         return editPrivateMenu(
           ctx,
-          liveGuideMessage(store.storeName),
+          liveGuideMessage(store),
           buildLiveMenu(store.storeNo, config.links),
         );
       } catch (error) {

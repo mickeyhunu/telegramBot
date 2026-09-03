@@ -11,8 +11,14 @@ function storeSelectionMessage() {
   return '🔴 실시간 LIVE\n\n실시간 정보를 확인할 가게를 선택해주세요.';
 }
 
-function liveGuideMessage(storeName) {
-  return `🔴 실시간 LIVE\n\n🏪 ${storeName}\n원하시는 서비스를 선택해 주세요.`;
+function formatStoreName({ storeName, storeEmoji }) {
+  return [String(storeEmoji || '').trim(), String(storeName || '').trim()]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function liveGuideMessage(store) {
+  return `🔴 실시간 LIVE\n\n${formatStoreName(store)}\n원하시는 서비스를 선택해 주세요.`;
 }
 
 function escapeHtml(value) {
@@ -91,6 +97,7 @@ function groupGuideCaption() {
 }
 
 module.exports = {
+  formatStoreName,
   formatPartnerBusinessName,
   groupGuideCaption,
   liveGuideMessage,
