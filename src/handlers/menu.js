@@ -26,6 +26,22 @@ function isSubscribed(member) {
     || (member?.status === 'restricted' && member.is_member);
 }
 
+async function checkSubscriptions(api, subscriptionChats, userId) {
+  const results = await Promise.allSettled(subscriptionChats.map(({ chatId }) => (
+    api.getChatMember({ chat_id: chatId, user_id: userId })
+  )));
+
+  return results.reduce((summary, result, index) => {
+    const chat = subscriptionChats[index];
+    if (result.status === 'rejected') {
+      summary.failed.push({ chat, error: result.reason });
+    } else if (!isSubscribed(result.value)) {
+      summary.missing.push(chat);
+    }
+    return summary;
+  }, { failed: [], missing: [] });
+}
+
 async function verifySubscriptions(ctx, config) {
   const userId = ctx.from?.id;
   if (!userId || config.subscriptionChats.some(({ chatId }) => !chatId)) {
@@ -36,30 +52,43 @@ async function verifySubscriptions(ctx, config) {
     return;
   }
 
+  let result;
   try {
-    const memberships = await Promise.all(config.subscriptionChats.map(({ chatId }) => (
-      ctx.api.getChatMember({ chat_id: chatId, user_id: userId })
-    )));
-    const missing = memberships
-      .map((member, index) => (isSubscribed(member) ? null : config.subscriptionChats[index].name))
-      .filter(Boolean);
-    if (missing.length) {
-      await ctx.answerCallbackQuery({
-        text: `${missing.join(', ')} 구독을 확인해 주세요.`,
-        show_alert: true,
-      });
-      return;
-    }
-
-    await ctx.answerCallbackQuery({ text: '구독이 확인되었습니다.' });
-    await sendPrivateMenu(ctx, config);
+    result = await checkSubscriptions(ctx.api, config.subscriptionChats, userId);
   } catch (error) {
-    console.error('구독 여부 확인 실패:', error);
+    // This is only a safeguard for an unexpected local error. Telegram request
+    // failures are returned per chat by checkSubscriptions.
+    console.error('구독 여부 확인 처리 실패:', error);
     await ctx.answerCallbackQuery({
       text: '구독 여부를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.',
       show_alert: true,
     });
+    return;
   }
+
+  if (result.failed.length) {
+    console.error('Telegram 구독 조회 실패:', result.failed.map(({ chat, error }) => ({
+      chat: chat.name,
+      chatId: chat.chatId,
+      error: error instanceof Error ? error.message : String(error),
+    })));
+    await ctx.answerCallbackQuery({
+      text: `${result.failed.map(({ chat }) => chat.name).join(', ')} 확인 권한이 없습니다. 봇을 해당 방의 관리자로 추가하고 채팅 ID 설정을 확인해 주세요.`,
+      show_alert: true,
+    });
+    return;
+  }
+
+  if (result.missing.length) {
+    await ctx.answerCallbackQuery({
+      text: `${result.missing.map(({ name }) => name).join(', ')} 구독을 확인해 주세요.`,
+      show_alert: true,
+    });
+    return;
+  }
+
+  await ctx.answerCallbackQuery({ text: '구독이 확인되었습니다.' });
+  await sendPrivateMenu(ctx, config);
 }
 
 async function sendGroupMenu(ctx, config, botUsername) {
