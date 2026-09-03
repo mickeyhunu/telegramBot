@@ -46,22 +46,48 @@ function formatChojoongCreatedAt(value) {
   if (!match) return String(value).trim();
 
   const [, month, day, hour, minute] = match;
-  return `${Number(month)}월 ${Number(day)}일 ${Number(hour)}시 ${Number(minute)}분 기준`;
+  return `${Number(month)}월 ${Number(day)}일 ${Number(hour)}시 ${Number(minute)}분`;
 }
 
 const LIVE_SECTION_DIVIDER = '➖➖➖➖➖➖➖➖➖➖➖➖➖➖';
 
-function formatChojoongInformation({ message, createdAt }) {
+function formatElapsedTime(value, now = new Date()) {
+  if (!value) return '';
+
+  const createdAt = value instanceof Date
+    ? value
+    : new Date(String(value).trim().replace(' ', 'T'));
+  const currentTime = now instanceof Date ? now : new Date(now);
+  if (Number.isNaN(createdAt.getTime()) || Number.isNaN(currentTime.getTime())) return '';
+
+  const elapsedMinutes = Math.max(0, Math.floor((currentTime - createdAt) / 60000));
+  if (elapsedMinutes < 60) return `${elapsedMinutes}분전`;
+
+  const hours = Math.floor(elapsedMinutes / 60);
+  const minutes = elapsedMinutes % 60;
+  return `${hours}시간${minutes ? `${minutes}분` : ''}전`;
+}
+
+function formatChojoongInformation({ message, createdAt }, now = new Date()) {
   const timestamp = formatChojoongCreatedAt(createdAt);
+  if (!timestamp) return message;
+
+  const elapsedTime = formatElapsedTime(createdAt, now);
+  return [
+    message,
+    '',
+    `🕒 ${timestamp}${elapsedTime ? ` [${elapsedTime}]` : ''}`,
+    LIVE_SECTION_DIVIDER,
+  ].join('\n');
+}
+
+function appendTimestamp(message, value) {
+  const timestamp = formatChojoongCreatedAt(value);
   return [
     message,
     timestamp && LIVE_SECTION_DIVIDER,
     timestamp && `🕒 ${timestamp}`,
   ].filter(Boolean).join('\n');
-}
-
-function appendTimestamp(message, value) {
-  return formatChojoongInformation({ message, createdAt: value });
 }
 
 function liveInformationMessage(store, action, information) {
@@ -74,7 +100,7 @@ function liveInformationMessage(store, action, information) {
 
   if (action === 'search') {
     details = information.length
-      ? information.map(formatChojoongInformation).join('\n\n')
+      ? information.map((item) => formatChojoongInformation(item)).join('\n')
       : '준비중입니다...';
   } else if (action === 'waiting') {
     const roomInfo = String(information.roomInfo) === '999' ? '여유' : formatLiveValue(information.roomInfo);
@@ -178,6 +204,7 @@ function groupGuideCaption() {
 module.exports = {
   formatChojoongCreatedAt,
   formatChojoongInformation,
+  formatElapsedTime,
   formatStoreName,
   formatPartnerBusinessName,
   groupGuideCaption,
