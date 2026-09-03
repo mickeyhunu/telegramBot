@@ -1,9 +1,10 @@
 const { Bot } = require('node-telegram-bot-api');
 const { readTelegramConfig, createTargetGroupChecker } = require('./config/telegram');
-const { registerMenuHandlers } = require('./handlers/menu');
+const { registerMenuHandlers, sendSubscriptionGate } = require('./handlers/menu');
 const { registerSystemHandlers } = require('./handlers/system');
 const { registerWelcomeHandler } = require('./handlers/welcome');
 const { createChoiceMessageHandler } = require('./services/choiceMessages');
+const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
 
 function createBot(token, { databasePools, env = process.env } = {}) {
@@ -12,9 +13,17 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   const config = readTelegramConfig(env);
   const isTargetGroup = createTargetGroupChecker(config);
   const bot = new Bot(token);
+  const requireSubscriptions = createSubscriptionGuard({
+    config,
+    onRejected: (ctx) => sendSubscriptionGate(ctx, config),
+  });
 
-  bot.on('message', createChoiceMessageHandler({ databasePool: pools.chatbot, isAllowedChat: isTargetGroup }));
-  registerMenuHandlers(bot, { config, isTargetGroup });
+  bot.on('message', createChoiceMessageHandler({
+    databasePool: pools.chatbot,
+    isAllowedChat: isTargetGroup,
+    requireSubscriptions,
+  }));
+  registerMenuHandlers(bot, { config, isTargetGroup, requireSubscriptions });
   registerSystemHandlers(bot, pools);
   registerWelcomeHandler(bot, { config, isTargetGroup });
   bot.catch((error) => console.error('Telegram bot handler failed:', error));
