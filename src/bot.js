@@ -28,6 +28,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     isTargetGroup,
     requireSubscriptions,
     businessAdsPool: pools.mnms,
+    chatbotPool: pools.chatbot,
   });
   registerSystemHandlers(bot, pools);
   registerWelcomeHandler(bot, { config, isTargetGroup });
