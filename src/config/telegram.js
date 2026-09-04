@@ -9,19 +9,8 @@ const DEFAULT_LINKS = Object.freeze({
   rbti: 'https://nightmens.com/play/rbti',
   wiki: 'https://nightmens.com/play/wiki',
   partners: 'https://nightmens.com/business-info',
-  channel: 'https://t.me/nightmens',
   support: 'https://t.me/mnmens_offical',
 });
-
-function readPartnerBusinesses(value = '') {
-  return value.split(',').map((entry) => {
-    const separator = entry.indexOf('|');
-    if (separator < 1) return null;
-    const name = entry.slice(0, separator).trim();
-    const url = entry.slice(separator + 1).trim();
-    return name && /^https?:\/\//i.test(url) ? { name, url } : null;
-  }).filter(Boolean);
-}
 
 function readTelegramConfig(env = process.env) {
   return {
@@ -29,7 +18,6 @@ function readTelegramConfig(env = process.env) {
     groupIds: new Set((env.TELEGRAM_GROUP_IDS || env.TELEGRAM_GROUP_ID || '')
       .split(',').map((id) => id.trim()).filter(Boolean)),
     guideImage: env.TELEGRAM_GUIDE_IMAGE || '',
-    privateGuideImage: env.TELEGRAM_PRIVATE_GUIDE_IMAGE || 'assets/private-welcome.jpg',
     subscriptionChats: [
       { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
       { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
@@ -40,10 +28,8 @@ function readTelegramConfig(env = process.env) {
       rbti: env.RBTI_URL || DEFAULT_LINKS.rbti,
       wiki: env.WIKI_URL || DEFAULT_LINKS.wiki,
       partners: env.PARTNERS_URL || DEFAULT_LINKS.partners,
-      channel: env.CHANNEL_URL || DEFAULT_LINKS.channel,
       support: env.SUPPORT_URL || DEFAULT_LINKS.support,
     },
-    partnerBusinesses: readPartnerBusinesses(env.PARTNER_BUSINESSES),
   };
 }
 
@@ -76,5 +62,4 @@ module.exports = {
   normalizeGroupTitle,
   readTargetGroupIds,
   readTelegramConfig,
-  readPartnerBusinesses,
 };

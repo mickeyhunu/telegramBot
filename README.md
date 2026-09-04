@@ -11,7 +11,6 @@
 - `MNMS_MYSQL_*`: `mnms_prod` 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: `chatBot_DB` 데이터베이스 접속 정보
 - `TELEGRAM_GUIDE_IMAGE`: 그룹 안내에 사용할 Telegram `file_id` 또는 공개 이미지 URL
-- `TELEGRAM_PRIVATE_GUIDE_IMAGE`: 개인 `/start` 안내 이미지의 로컬 경로 (기본값 `assets/private-welcome.jpg`)
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
 - `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
 - `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`: 홈페이지,
@@ -70,8 +69,6 @@ Privacy Mode를 꺼야 합니다.
   두 방을 모두 구독 중이면 바로 개인 메뉴를 표시하고, 한 방이라도 구독하지 않았다면
   구독 안내를 표시합니다. Telegram은 사용자가 봇을 열기만 했을 때는 업데이트를 보내지
   않으므로 첫 확인은 `/start` 시점에 실행됩니다.
-- `assets/private-welcome.jpg`에 이미지를 추가하면 자동으로 사용합니다. 파일이 없으면
-  안내 문구만 전송합니다.
 - `구독 완료했어요`를 누르면 두 채널의 가입 상태를 모두 확인합니다. 구독이 확인되면
   기존 구독 안내 메시지를 삭제한 후 개인 메뉴를 표시합니다. 정확한 확인을 위해 봇을
   두 채널의 관리자로 추가하고 두

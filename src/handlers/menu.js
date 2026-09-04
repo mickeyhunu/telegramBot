@@ -17,8 +17,6 @@ const {
 } = require('../ui/messages');
 const {
   checkSubscriptions,
-  createSubscriptionGuard,
-  isSubscribed,
   logSubscriptionFailures,
 } = require('../services/subscriptions');
 const { getActiveBusinessAds } = require('../services/businessAds');
@@ -322,9 +320,6 @@ function registerMenuHandlers(bot, {
 
 module.exports = {
   clearRecentPrivateMessages,
-  checkSubscriptions,
-  createSubscriptionGuard,
-  isSubscribed,
   registerMenuHandlers,
   resolveBotUsername,
   sendGroupMenu,
