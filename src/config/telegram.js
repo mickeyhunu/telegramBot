@@ -14,7 +14,7 @@ const DEFAULT_LINKS = Object.freeze({
 
 function readTelegramConfig(env = process.env) {
   return {
-    welcomeChatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '',
+    welcomeChatId: env.TELEGRAM_COMMUNITY_CHAT_ID?.trim() || '',
     welcomePhotoPath: env.TELEGRAM_WELCOME_PHOTO_PATH
       || path.resolve(__dirname, '../../assets/group-welcome.jpg'),
     subscriptionChats: [
