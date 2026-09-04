@@ -1,3 +1,5 @@
+const path = require('node:path');
+
 const WEBSITE_URL = 'https://nightmens.com/';
 const ANNOUNCEMENT_URL = 'https://t.me/+1hcSUQN8lNswZTM1';
 const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
@@ -12,6 +14,9 @@ const DEFAULT_LINKS = Object.freeze({
 
 function readTelegramConfig(env = process.env) {
   return {
+    welcomeChatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '',
+    welcomePhotoPath: env.TELEGRAM_WELCOME_PHOTO_PATH
+      || path.resolve(__dirname, '../../assets/group-welcome.jpg'),
     subscriptionChats: [
       { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
       { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },

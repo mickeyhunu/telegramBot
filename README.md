@@ -1,7 +1,8 @@
-# 미드나잇맨즈 Telegram 개인 봇
+# 미드나잇맨즈 Telegram 봇
 
 이 봇은 개인 대화에서 `/start` 명령으로 미드나잇맨즈 메뉴를 제공합니다. 그룹 명령,
-신규 멤버 환영 메시지, `/dbinfo`, `/chatid`, 그룹 초이스톡 자동 답장은 제공하지 않습니다.
+그룹에 새로 입장한 멤버에게는 이미지와 함께 사용자 정보 및 이용 규정을 안내합니다.
+`/dbinfo`, `/chatid`, 그룹 초이스톡 자동 답장은 제공하지 않습니다.
 
 ## 설정
 
@@ -9,7 +10,8 @@
 
 - `BOT_TOKEN`: BotFather에서 발급받은 Telegram 봇 토큰
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
-- `TELEGRAM_COMMUNITY_CHAT_ID`: 미드나잇맨즈 소통방의 숫자 채팅 ID
+- `TELEGRAM_COMMUNITY_CHAT_ID`: 환영 메시지를 사용할 미드나잇맨즈 소통방의 숫자 채팅 ID
+- `TELEGRAM_WELCOME_PHOTO_PATH`: 그룹 환영 이미지 경로(선택 사항)
 - `MNMS_MYSQL_*`: 개인 메뉴의 제휴업체 정보를 조회할 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: 개인 메뉴의 LIVE 정보를 조회할 데이터베이스 접속 정보
 - `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`:
@@ -19,6 +21,18 @@
 npm install
 npm start
 ```
+
+## 그룹 신규 멤버 환영 메시지
+
+기본 환영 이미지 경로는 프로젝트 루트의 `assets/group-welcome.jpg`입니다. 해당 경로에
+이미지를 넣은 뒤 봇을 그룹 관리자로 추가해 사용합니다. 다른 위치의 이미지를 사용할
+경우 `.env`의 `TELEGRAM_WELCOME_PHOTO_PATH`에 절대 경로나 프로젝트 실행 위치 기준
+상대 경로를 지정할 수 있습니다.
+
+`TELEGRAM_COMMUNITY_CHAT_ID`와 일치하는 그룹 또는 슈퍼그룹에 새 멤버가 입장할
+때만 사용자명, 텔레그램 사용자 ID, 고유번호와 한국 시간 기준 입장 일시를 이미지
+설명으로 전송합니다. 해당 값이 비어 있거나 다른 그룹에서는 환영 메시지가 작동하지
+않습니다.
 
 ## `/start` 동작
 
@@ -44,8 +58,9 @@ npm run telegram:status
 
 ```text
 src/
-├── bot.js                 # 개인 봇 생성 및 /start 기능 조립
+├── bot.js                 # 봇 생성 및 기능 조립
 ├── config/telegram.js     # 구독 채팅과 메뉴 링크 설정
+├── handlers/groupWelcome.js # 그룹 신규 멤버 환영 메시지
 ├── handlers/menu.js       # /start 및 개인 메뉴 처리
 ├── services/              # 구독 상태와 개인 메뉴 데이터 조회
 └── ui/                    # 개인 안내 문구와 인라인 키보드
