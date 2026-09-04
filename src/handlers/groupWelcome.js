@@ -39,7 +39,9 @@ function joinedAtParts(unixTimestamp) {
     minute: '2-digit',
     second: '2-digit',
     hour12: true,
-  }).format(joinedAt);
+  }).format(joinedAt)
+    .replace(/^AM\s/, '오전 ')
+    .replace(/^PM\s/, '오후 ');
 
   return {
     date: `${part('year')}. ${part('month')}. ${part('day')}.`,
@@ -67,6 +69,9 @@ function welcomeCaption(member, unixTimestamp) {
     '',
     '<b>규정위반시 그룹/채널</b>',
     '<b>영구제제입니다</b>',
+    '',
+    '<a href="https://t.me/mnmens_bot"><b>[ 미드나잇맨즈봇 사용하기 ]</b></a> @mnmens_bot',
+    '<a href="https://nightmens.com/"><b>[ 미드나잇맨즈 바로가기 ]</b></a>',
   ].join('\n');
 }
 
