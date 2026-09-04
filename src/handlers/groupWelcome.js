@@ -8,7 +8,6 @@ if (typeof globalThis.crypto?.getRandomValues !== 'function') {
 }
 
 const { fromPath } = require('node-telegram-bot-api/node');
-const { existsSync } = require('node:fs');
 
 const SEOUL_TIME_ZONE = 'Asia/Seoul';
 const WELCOME_DEDUPLICATION_MS = 30_000;
@@ -85,26 +84,15 @@ function isJoinTransition(event) {
   return !isCurrentMember(event.old_chat_member) && isCurrentMember(event.new_chat_member);
 }
 
-function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console }) {
+function registerGroupWelcomeHandler(bot, { chatId, photoPath }) {
   const recentlyWelcomed = new Map();
 
-  logger.info('[welcome] handler registered', {
-    configuredChatId: chatId || '(not configured)',
-    photoPath,
-    photoExists: Boolean(photoPath && existsSync(photoPath)),
-  });
-
-  async function sendWelcome(ctx, member, unixTimestamp, source) {
+  async function sendWelcome(ctx, member, unixTimestamp) {
     const deduplicationKey = `${ctx.chatId}:${member.id}`;
     const now = Date.now();
     const lastSentAt = recentlyWelcomed.get(deduplicationKey);
 
     if (lastSentAt && now - lastSentAt < WELCOME_DEDUPLICATION_MS) {
-      logger.info('[welcome] duplicate join update ignored', {
-        chatId: ctx.chatId,
-        memberId: member.id,
-        source,
-      });
       return;
     }
 
@@ -120,37 +108,21 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
     const caption = welcomeCaption(member, unixTimestamp);
 
     try {
-      logger.info('[welcome] sending welcome photo', { chatId: ctx.chatId, memberId: member.id, source });
       await ctx.api.sendPhoto({
         chat_id: ctx.chatId,
         photo: await fromPath(photoPath),
         caption,
         parse_mode: 'HTML',
       });
-      logger.info('[welcome] welcome photo sent', { chatId: ctx.chatId, memberId: member.id, source });
-    } catch (error) {
-      logger.warn('[welcome] photo failed; retrying with text', {
-        chatId: ctx.chatId,
-        memberId: member.id,
-        source,
-        error: error.message,
-      });
-
+    } catch {
       try {
         await ctx.api.sendMessage({
           chat_id: ctx.chatId,
           text: caption,
           parse_mode: 'HTML',
         });
-        logger.info('[welcome] fallback text sent', { chatId: ctx.chatId, memberId: member.id, source });
-      } catch (fallbackError) {
+      } catch {
         recentlyWelcomed.delete(deduplicationKey);
-        logger.error('[welcome] fallback text failed', {
-          chatId: ctx.chatId,
-          memberId: member.id,
-          source,
-          error: fallbackError.message,
-        });
       }
     }
   }
@@ -164,27 +136,12 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
       return next();
     }
 
-    logger.info('[welcome] new_chat_members update received', {
-      updateId: ctx.update.update_id,
-      chatId: ctx.chatId,
-      chatType: ctx.chat?.type,
-      configuredChatId: chatId || '(not configured)',
-      memberIds: members.map(({ id }) => id),
-    });
-
     if (!isWelcomeChat || !isGroup) {
-      logger.warn('[welcome] update ignored', {
-        reason: !chatId
-          ? 'TELEGRAM_COMMUNITY_CHAT_ID is not configured'
-          : (!isWelcomeChat ? 'chat ID does not match' : 'update is not from a group'),
-        receivedChatId: ctx.chatId,
-        configuredChatId: chatId || '(not configured)',
-      });
       return next();
     }
 
     for (const member of members) {
-      await sendWelcome(ctx, member, ctx.message.date, 'message');
+      await sendWelcome(ctx, member, ctx.message.date);
     }
 
     return undefined;
@@ -197,19 +154,9 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
     const isWelcomeChat = chatId && String(ctx.chatId) === String(chatId);
     const isGroup = ['group', 'supergroup'].includes(ctx.chat?.type);
     const joined = isJoinTransition(event);
-    logger.info('[welcome] chat_member status update received', {
-      updateId: ctx.update.update_id,
-      chatId: ctx.chatId,
-      configuredChatId: chatId || '(not configured)',
-      userId: event.new_chat_member?.user?.id,
-      oldStatus: event.old_chat_member?.status,
-      newStatus: event.new_chat_member?.status,
-      chatMatches: Boolean(chatId && String(ctx.chatId) === String(chatId)),
-      isJoinTransition: joined,
-    });
 
     if (isWelcomeChat && isGroup && joined) {
-      await sendWelcome(ctx, event.new_chat_member.user, event.date, 'chat_member');
+      await sendWelcome(ctx, event.new_chat_member.user, event.date);
     }
 
     return next();
