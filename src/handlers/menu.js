@@ -1,5 +1,4 @@
 const {
-  buildGroupMenu,
   buildLiveMenu,
   buildPartnersMenu,
   buildPrivateMenu,
@@ -7,7 +6,6 @@ const {
   buildSubscriptionMenu,
 } = require('../ui/keyboards');
 const {
-  groupGuideCaption,
   liveGuideMessage,
   liveInformationMessage,
   partnersGuideMessage,
@@ -45,11 +43,6 @@ async function clearRecentPrivateMessages(ctx, logger = console) {
     // that are too old). A cleanup failure must not prevent /start from working.
     logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${error.message}`);
   }
-}
-
-async function resolveBotUsername(ctx, cache) {
-  if (!cache.username) cache.username = (await ctx.api.getMe()).username;
-  return cache.username;
 }
 
 async function sendPrivateMenu(ctx, config) {
@@ -153,24 +146,8 @@ async function verifySubscriptions(ctx, config) {
   }
 }
 
-async function sendGroupMenu(ctx, config, botUsername) {
-  const options = { reply_markup: buildGroupMenu(botUsername, config.links) };
-  if (config.guideImage) {
-    await ctx.api.sendPhoto({ chat_id: ctx.chatId, photo: config.guideImage, caption: groupGuideCaption(), ...options });
-    return;
-  }
-
-  const group = await ctx.api.getChat({ chat_id: ctx.chatId });
-  if (group.photo?.big_file_id) {
-    await ctx.api.sendPhoto({ chat_id: ctx.chatId, photo: group.photo.big_file_id, caption: groupGuideCaption(), ...options });
-    return;
-  }
-  await ctx.reply(groupGuideCaption(), options);
-}
-
 function registerMenuHandlers(bot, {
   config,
-  isTargetGroup,
   requireSubscriptions = (_ctx, next) => next(),
   businessAdsPool,
   loadActiveBusinessAds = getActiveBusinessAds,
@@ -179,8 +156,6 @@ function registerMenuHandlers(bot, {
   loadStores = getStores,
   loadLiveInformation = getLiveInformation,
 }) {
-  const cache = {};
-
   bot.command('start', async (ctx) => {
     if (ctx.chat?.type !== 'private') return undefined;
     await clearRecentPrivateMessages(ctx);
@@ -306,23 +281,11 @@ function registerMenuHandlers(bot, {
       show_alert: true,
     }));
   });
-  bot.hears(/^\/(?:채널안내|메뉴)(?:@\w+)?\s*$/, async (ctx) => {
-    if (ctx.chat?.type === 'private') {
-      return requireSubscriptions(ctx, () => sendPrivateMenu(ctx, config));
-    }
-    if (!isTargetGroup(ctx.chat)) return undefined;
-    return requireSubscriptions(ctx, async () => {
-      const username = await resolveBotUsername(ctx, cache);
-      return sendGroupMenu(ctx, config, username);
-    });
-  });
 }
 
 module.exports = {
   clearRecentPrivateMessages,
   registerMenuHandlers,
-  resolveBotUsername,
-  sendGroupMenu,
   sendPrivateMenu,
   sendSubscriptionGate,
   startSubscriptionFlow,
