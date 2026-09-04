@@ -24,7 +24,7 @@ npm start
 
 ## 그룹 신규 멤버 환영 메시지
 
-기본 환영 이미지 경로는 프로젝트 루트의 `assets/group-welcome.jpg`입니다. 해당 경로에
+기본 환영 이미지 경로는 프로젝트 루트의 `assets/group-welcome.png`입니다. 해당 경로에
 이미지를 넣은 뒤 봇을 그룹 관리자로 추가해 사용합니다. 다른 위치의 이미지를 사용할
 경우 `.env`의 `TELEGRAM_WELCOME_PHOTO_PATH`에 절대 경로나 프로젝트 실행 위치 기준
 상대 경로를 지정할 수 있습니다.

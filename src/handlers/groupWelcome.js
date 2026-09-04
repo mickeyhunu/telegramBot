@@ -1,3 +1,12 @@
+const { webcrypto } = require('node:crypto');
+
+// Node.js 18 does not consistently expose Web Crypto as a global in script
+// execution. The Telegram client's multipart encoder expects it when uploading
+// files, so install Node's built-in implementation before loading the client.
+if (typeof globalThis.crypto?.getRandomValues !== 'function') {
+  globalThis.crypto = webcrypto;
+}
+
 const { fromPath } = require('node-telegram-bot-api/node');
 const { existsSync } = require('node:fs');
 
