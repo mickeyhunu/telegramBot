@@ -109,15 +109,12 @@ function buildSubscriptionMenu(subscriptionChats) {
     .text('구독 완료했어요', 'verify_subscriptions'));
 }
 
-const buildStartMenu = (links = DEFAULT_LINKS) => buildPrivateMenu(links);
-
 module.exports = {
   buildGroupMenu,
   buildLiveMenu,
   buildPartnersMenu,
   buildPrivateMenu,
   buildStoreSelectionMenu,
-  buildStartMenu,
   buildSubscriptionMenu,
   buildWelcomeButton,
 };
