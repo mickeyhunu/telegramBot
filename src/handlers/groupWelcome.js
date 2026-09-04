@@ -2,6 +2,7 @@ const { fromPath } = require('node-telegram-bot-api/node');
 const { existsSync } = require('node:fs');
 
 const SEOUL_TIME_ZONE = 'Asia/Seoul';
+const WELCOME_DEDUPLICATION_MS = 30_000;
 
 function escapeHtml(value) {
   return String(value)
@@ -60,12 +61,85 @@ function welcomeCaption(member, unixTimestamp) {
   ].join('\n');
 }
 
+function isCurrentMember(chatMember) {
+  if (!chatMember) return false;
+  if (chatMember.status === 'restricted') return chatMember.is_member === true;
+  return ['creator', 'administrator', 'member'].includes(chatMember.status);
+}
+
+function isJoinTransition(event) {
+  return !isCurrentMember(event.old_chat_member) && isCurrentMember(event.new_chat_member);
+}
+
 function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console }) {
+  const recentlyWelcomed = new Map();
+
   logger.info('[welcome] handler registered', {
     configuredChatId: chatId || '(not configured)',
     photoPath,
     photoExists: Boolean(photoPath && existsSync(photoPath)),
   });
+
+  async function sendWelcome(ctx, member, unixTimestamp, source) {
+    const deduplicationKey = `${ctx.chatId}:${member.id}`;
+    const now = Date.now();
+    const lastSentAt = recentlyWelcomed.get(deduplicationKey);
+
+    if (lastSentAt && now - lastSentAt < WELCOME_DEDUPLICATION_MS) {
+      logger.info('[welcome] duplicate join update ignored', {
+        chatId: ctx.chatId,
+        memberId: member.id,
+        source,
+      });
+      return;
+    }
+
+    // Reserve the key before awaiting the API so message and chat_member
+    // updates arriving together cannot both send a welcome.
+    recentlyWelcomed.set(deduplicationKey, now);
+    const expiration = setTimeout(() => {
+      if (recentlyWelcomed.get(deduplicationKey) === now) {
+        recentlyWelcomed.delete(deduplicationKey);
+      }
+    }, WELCOME_DEDUPLICATION_MS);
+    expiration.unref?.();
+    const caption = welcomeCaption(member, unixTimestamp);
+
+    try {
+      logger.info('[welcome] sending welcome photo', { chatId: ctx.chatId, memberId: member.id, source });
+      await ctx.api.sendPhoto({
+        chat_id: ctx.chatId,
+        photo: await fromPath(photoPath),
+        caption,
+        parse_mode: 'HTML',
+      });
+      logger.info('[welcome] welcome photo sent', { chatId: ctx.chatId, memberId: member.id, source });
+    } catch (error) {
+      logger.warn('[welcome] photo failed; retrying with text', {
+        chatId: ctx.chatId,
+        memberId: member.id,
+        source,
+        error: error.message,
+      });
+
+      try {
+        await ctx.api.sendMessage({
+          chat_id: ctx.chatId,
+          text: caption,
+          parse_mode: 'HTML',
+        });
+        logger.info('[welcome] fallback text sent', { chatId: ctx.chatId, memberId: member.id, source });
+      } catch (fallbackError) {
+        recentlyWelcomed.delete(deduplicationKey);
+        logger.error('[welcome] fallback text failed', {
+          chatId: ctx.chatId,
+          memberId: member.id,
+          source,
+          error: fallbackError.message,
+        });
+      }
+    }
+  }
 
   bot.on('message', async (ctx, next) => {
     const members = ctx.message?.new_chat_members || [];
@@ -96,49 +170,19 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
     }
 
     for (const member of members) {
-      const caption = welcomeCaption(member, ctx.message.date);
-
-      try {
-        logger.info('[welcome] sending welcome photo', { chatId: ctx.chatId, memberId: member.id });
-        await ctx.api.sendPhoto({
-          chat_id: ctx.chatId,
-          photo: await fromPath(photoPath),
-          caption,
-          parse_mode: 'HTML',
-        });
-        logger.info('[welcome] welcome photo sent', { chatId: ctx.chatId, memberId: member.id });
-      } catch (error) {
-        logger.warn('[welcome] photo failed; retrying with text', {
-          chatId: ctx.chatId,
-          memberId: member.id,
-          error: error.message,
-        });
-
-        try {
-          await ctx.api.sendMessage({
-            chat_id: ctx.chatId,
-            text: caption,
-            parse_mode: 'HTML',
-          });
-          logger.info('[welcome] fallback text sent', { chatId: ctx.chatId, memberId: member.id });
-        } catch (fallbackError) {
-          logger.error('[welcome] fallback text failed', {
-            chatId: ctx.chatId,
-            memberId: member.id,
-            error: fallbackError.message,
-          });
-        }
-      }
+      await sendWelcome(ctx, member, ctx.message.date, 'message');
     }
 
     return undefined;
   });
 
   // Telegram can emit this admin-only update even when the corresponding
-  // new_chat_members service message is unavailable. Keep it diagnostic-only
-  // to avoid sending duplicate welcome messages.
-  bot.on('chat_member', (ctx, next) => {
+  // new_chat_members service message is unavailable.
+  bot.on('chat_member', async (ctx, next) => {
     const event = ctx.update.chat_member;
+    const isWelcomeChat = chatId && String(ctx.chatId) === String(chatId);
+    const isGroup = ['group', 'supergroup'].includes(ctx.chat?.type);
+    const joined = isJoinTransition(event);
     logger.info('[welcome] chat_member status update received', {
       updateId: ctx.update.update_id,
       chatId: ctx.chatId,
@@ -147,7 +191,13 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
       oldStatus: event.old_chat_member?.status,
       newStatus: event.new_chat_member?.status,
       chatMatches: Boolean(chatId && String(ctx.chatId) === String(chatId)),
+      isJoinTransition: joined,
     });
+
+    if (isWelcomeChat && isGroup && joined) {
+      await sendWelcome(ctx, event.new_chat_member.user, event.date, 'chat_member');
+    }
+
     return next();
   });
 }
