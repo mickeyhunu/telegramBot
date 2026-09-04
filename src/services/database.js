@@ -32,16 +32,4 @@ function createDatabasePools(env = process.env) {
   ]));
 }
 
-async function getDatabaseStatuses(pools) {
-  return Promise.all(DATABASE_PREFIXES.map(async (prefix) => {
-    const key = prefix.toLowerCase();
-    const [rows] = await pools[key].execute('SELECT DATABASE() AS databaseName, NOW() AS serverTime');
-    return { key, ...rows[0] };
-  }));
-}
-
-async function closeDatabasePools(pools) {
-  await Promise.all(Object.values(pools).map((pool) => pool.end()));
-}
-
-module.exports = { closeDatabasePools, createDatabasePools, getDatabaseStatuses, readDatabaseConfig };
+module.exports = { createDatabasePools, readDatabaseConfig };

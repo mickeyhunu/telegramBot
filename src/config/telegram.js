@@ -4,7 +4,6 @@ const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
 
 const DEFAULT_LINKS = Object.freeze({
   website: WEBSITE_URL,
-  live: 'https://nightmens.com/play/live',
   rbti: 'https://nightmens.com/play/rbti',
   wiki: 'https://nightmens.com/play/wiki',
   partners: 'https://nightmens.com/business-info',
@@ -19,7 +18,6 @@ function readTelegramConfig(env = process.env) {
     ],
     links: {
       website: env.WEBSITE_URL || DEFAULT_LINKS.website,
-      live: env.LIVE_URL || DEFAULT_LINKS.live,
       rbti: env.RBTI_URL || DEFAULT_LINKS.rbti,
       wiki: env.WIKI_URL || DEFAULT_LINKS.wiki,
       partners: env.PARTNERS_URL || DEFAULT_LINKS.partners,
