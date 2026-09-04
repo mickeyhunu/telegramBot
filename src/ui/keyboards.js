@@ -81,24 +81,6 @@ function buildPartnersMenu(links = DEFAULT_LINKS) {
   return colorize(addFixedLinks(keyboard, links), links);
 }
 
-function buildGroupMenu(botUsername, links = DEFAULT_LINKS) {
-  const privateMenuUrl = `https://t.me/${botUsername}?start=menu`;
-  return colorize(new InlineKeyboardBuilder()
-    .url('🎥 LIVE 바로가기', links.live)
-    .row()
-    .url('📢 채널 안내', privateMenuUrl)
-    .url('🤝 제휴업체', links.partners)
-    .row()
-    .url('🌐 커뮤니티', links.website)
-    .url('💬 문의하기', links.support), links);
-}
-
-function buildWelcomeButton(links) {
-  return colorize(new InlineKeyboardBuilder()
-    .url('🌐 커뮤니티', links.website)
-    .url('💬 문의하기', links.support), links);
-}
-
 function buildSubscriptionMenu(subscriptionChats) {
   const [announcement, community] = subscriptionChats;
   return colorize(new InlineKeyboardBuilder()
@@ -110,11 +92,9 @@ function buildSubscriptionMenu(subscriptionChats) {
 }
 
 module.exports = {
-  buildGroupMenu,
   buildLiveMenu,
   buildPartnersMenu,
   buildPrivateMenu,
   buildStoreSelectionMenu,
   buildSubscriptionMenu,
-  buildWelcomeButton,
 };
