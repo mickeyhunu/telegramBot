@@ -68,15 +68,27 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
     }
 
     for (const member of members) {
+      const caption = welcomeCaption(member, ctx.message.date);
+
       try {
         await ctx.api.sendPhoto({
           chat_id: ctx.chatId,
           photo: await fromPath(photoPath),
-          caption: welcomeCaption(member, ctx.message.date),
+          caption,
           parse_mode: 'HTML',
         });
       } catch (error) {
-        logger.error(`신규 멤버 환영 메시지 전송 실패 (${member.id}): ${error.message}`);
+        logger.warn(`환영 이미지 전송 실패, 텍스트로 재시도합니다 (${member.id}): ${error.message}`);
+
+        try {
+          await ctx.api.sendMessage({
+            chat_id: ctx.chatId,
+            text: caption,
+            parse_mode: 'HTML',
+          });
+        } catch (fallbackError) {
+          logger.error(`신규 멤버 환영 메시지 전송 실패 (${member.id}): ${fallbackError.message}`);
+        }
       }
     }
 
