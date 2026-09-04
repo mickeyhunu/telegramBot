@@ -1,4 +1,5 @@
 const { fromPath } = require('node-telegram-bot-api/node');
+const { existsSync } = require('node:fs');
 
 const SEOUL_TIME_ZONE = 'Asia/Seoul';
 
@@ -60,10 +61,37 @@ function welcomeCaption(member, unixTimestamp) {
 }
 
 function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console }) {
+  logger.info('[welcome] handler registered', {
+    configuredChatId: chatId || '(not configured)',
+    photoPath,
+    photoExists: Boolean(photoPath && existsSync(photoPath)),
+  });
+
   bot.on('message', async (ctx, next) => {
     const members = ctx.message?.new_chat_members || [];
     const isWelcomeChat = chatId && String(ctx.chatId) === String(chatId);
-    if (!isWelcomeChat || !['group', 'supergroup'].includes(ctx.chat?.type) || !members.length) {
+    const isGroup = ['group', 'supergroup'].includes(ctx.chat?.type);
+
+    if (!members.length) {
+      return next();
+    }
+
+    logger.info('[welcome] new_chat_members update received', {
+      updateId: ctx.update.update_id,
+      chatId: ctx.chatId,
+      chatType: ctx.chat?.type,
+      configuredChatId: chatId || '(not configured)',
+      memberIds: members.map(({ id }) => id),
+    });
+
+    if (!isWelcomeChat || !isGroup) {
+      logger.warn('[welcome] update ignored', {
+        reason: !chatId
+          ? 'TELEGRAM_COMMUNITY_CHAT_ID is not configured'
+          : (!isWelcomeChat ? 'chat ID does not match' : 'update is not from a group'),
+        receivedChatId: ctx.chatId,
+        configuredChatId: chatId || '(not configured)',
+      });
       return next();
     }
 
@@ -71,14 +99,20 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
       const caption = welcomeCaption(member, ctx.message.date);
 
       try {
+        logger.info('[welcome] sending welcome photo', { chatId: ctx.chatId, memberId: member.id });
         await ctx.api.sendPhoto({
           chat_id: ctx.chatId,
           photo: await fromPath(photoPath),
           caption,
           parse_mode: 'HTML',
         });
+        logger.info('[welcome] welcome photo sent', { chatId: ctx.chatId, memberId: member.id });
       } catch (error) {
-        logger.warn(`환영 이미지 전송 실패, 텍스트로 재시도합니다 (${member.id}): ${error.message}`);
+        logger.warn('[welcome] photo failed; retrying with text', {
+          chatId: ctx.chatId,
+          memberId: member.id,
+          error: error.message,
+        });
 
         try {
           await ctx.api.sendMessage({
@@ -86,13 +120,35 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath, logger = console 
             text: caption,
             parse_mode: 'HTML',
           });
+          logger.info('[welcome] fallback text sent', { chatId: ctx.chatId, memberId: member.id });
         } catch (fallbackError) {
-          logger.error(`신규 멤버 환영 메시지 전송 실패 (${member.id}): ${fallbackError.message}`);
+          logger.error('[welcome] fallback text failed', {
+            chatId: ctx.chatId,
+            memberId: member.id,
+            error: fallbackError.message,
+          });
         }
       }
     }
 
     return undefined;
+  });
+
+  // Telegram can emit this admin-only update even when the corresponding
+  // new_chat_members service message is unavailable. Keep it diagnostic-only
+  // to avoid sending duplicate welcome messages.
+  bot.on('chat_member', (ctx, next) => {
+    const event = ctx.update.chat_member;
+    logger.info('[welcome] chat_member status update received', {
+      updateId: ctx.update.update_id,
+      chatId: ctx.chatId,
+      configuredChatId: chatId || '(not configured)',
+      userId: event.new_chat_member?.user?.id,
+      oldStatus: event.old_chat_member?.status,
+      newStatus: event.new_chat_member?.status,
+      chatMatches: Boolean(chatId && String(ctx.chatId) === String(chatId)),
+    });
+    return next();
   });
 }
 

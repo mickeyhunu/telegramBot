@@ -32,6 +32,12 @@ npm start
 이미지 파일이 없거나 Telegram이 이미지 전송을 거부하는 경우에도 환영 문구는 텍스트
 메시지로 자동 재전송됩니다.
 
+실행 로그에서 `[welcome]` 항목을 확인하면 핸들러 등록 시의 채팅 ID/이미지 파일 상태,
+신규 멤버 업데이트 수신 여부, 채팅 ID 불일치로 무시된 이유, 이미지 및 대체 텍스트의
+전송 결과를 단계별로 확인할 수 있습니다. `chat_member status update received`만 보이고
+`new_chat_members update received`가 보이지 않는다면 봇의 관리자 권한과 BotFather의
+Privacy Mode 설정을 확인하세요.
+
 `TELEGRAM_COMMUNITY_CHAT_ID`와 일치하는 그룹 또는 슈퍼그룹에 새 멤버가 입장할
 때만 사용자명, 텔레그램 사용자 ID, 고유번호와 한국 시간 기준 입장 일시를 이미지
 설명으로 전송합니다. 해당 값이 비어 있거나 다른 그룹에서는 환영 메시지가 작동하지
