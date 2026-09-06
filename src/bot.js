@@ -4,12 +4,14 @@ const { registerMenuHandlers, sendSubscriptionGate } = require('./handlers/menu'
 const { registerGroupWelcomeHandler } = require('./handlers/groupWelcome');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
+const { createGroupMemberStore } = require('./services/groupMembers');
 
 function createBot(token, { databasePools, env = process.env } = {}) {
   if (!token) throw new Error('BOT_TOKEN 환경 변수가 필요합니다.');
   const pools = databasePools || createDatabasePools(env);
   const config = readTelegramConfig(env);
   const bot = new Bot(token);
+  const groupMemberStore = createGroupMemberStore(config.groupMemberStorePath);
   const requireSubscriptions = createSubscriptionGuard({
     config,
     onRejected: (ctx) => sendSubscriptionGate(ctx, config),
@@ -24,6 +26,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   registerGroupWelcomeHandler(bot, {
     chatId: config.welcomeChatId,
     photoPath: config.welcomePhotoPath,
+    memberStore: groupMemberStore,
   });
   bot.catch((error) => console.error('Telegram bot handler failed:', error));
   return bot;

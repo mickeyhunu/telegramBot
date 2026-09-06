@@ -11,6 +11,8 @@ const { fromPath } = require('node-telegram-bot-api/node');
 
 const SEOUL_TIME_ZONE = 'Asia/Seoul';
 const WELCOME_DEDUPLICATION_MS = 30_000;
+const NEW_MEMBER_LINK_RESTRICTION_MS = 10 * 60 * 1000;
+const LINK_ENTITY_TYPES = new Set(['url', 'text_link']);
 
 function escapeHtml(value) {
   return String(value)
@@ -65,6 +67,7 @@ function welcomeCaption(member, unixTimestamp) {
     '<b>무단홍보❎</b>',
     '<b>금전거래 ❎</b>',
     '<b>도배 및 음란물❎</b>',
+    '<b>신규 회원은 입장 후 10분간 링크 작성 금지❎</b>',
     '',
     '<b>규정위반시 그룹/채널</b>',
     '<b>영구제제입니다</b>',
@@ -84,8 +87,29 @@ function isJoinTransition(event) {
   return !isCurrentMember(event.old_chat_member) && isCurrentMember(event.new_chat_member);
 }
 
-function registerGroupWelcomeHandler(bot, { chatId, photoPath }) {
+function messageContainsLink(message) {
+  return [...(message?.entities || []), ...(message?.caption_entities || [])]
+    .some(({ type }) => LINK_ENTITY_TYPES.has(type));
+}
+
+function registerGroupWelcomeHandler(bot, {
+  chatId,
+  photoPath,
+  memberStore,
+  logger = console,
+}) {
   const recentlyWelcomed = new Map();
+
+  async function saveJoin(currentChatId, member, joinedAt, status = 'member') {
+    const restrictedUntil = (joinedAt * 1000) + NEW_MEMBER_LINK_RESTRICTION_MS;
+    await memberStore.recordJoin(currentChatId, member, joinedAt, restrictedUntil, status);
+  }
+
+  async function isLinkRestricted(currentChatId, userId) {
+    const member = await memberStore.getMember(currentChatId, userId);
+    const restrictedUntil = member?.moderation?.linkPostingRestrictedUntil;
+    return restrictedUntil ? Date.now() < new Date(restrictedUntil).getTime() : false;
+  }
 
   async function sendWelcome(ctx, member, unixTimestamp) {
     const deduplicationKey = `${ctx.chatId}:${member.id}`;
@@ -132,15 +156,41 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath }) {
     const isWelcomeChat = chatId && String(ctx.chatId) === String(chatId);
     const isGroup = ['group', 'supergroup'].includes(ctx.chat?.type);
 
-    if (!members.length) {
-      return next();
-    }
-
     if (!isWelcomeChat || !isGroup) {
       return next();
     }
 
+    if (!members.length) {
+      if (!ctx.from?.id || !messageContainsLink(ctx.message)) {
+        return next();
+      }
+
+      let restricted;
+      try {
+        restricted = await isLinkRestricted(ctx.chatId, ctx.from.id);
+      } catch (error) {
+        logger.error(`그룹 회원 정보 조회 실패 (${ctx.chatId}:${ctx.from.id}): ${error.message}`);
+        return next();
+      }
+      if (!restricted) return next();
+
+      try {
+        await ctx.api.deleteMessage({
+          chat_id: ctx.chatId,
+          message_id: ctx.message.message_id,
+        });
+      } catch (error) {
+        logger.warn(`신규 회원 링크 메시지 삭제 실패 (${ctx.chatId}:${ctx.from.id}): ${error.message}`);
+      }
+      return undefined;
+    }
+
     for (const member of members) {
+      try {
+        await saveJoin(ctx.chatId, member, ctx.message.date);
+      } catch (error) {
+        logger.error(`신규 회원 정보 저장 실패 (${ctx.chatId}:${member.id}): ${error.message}`);
+      }
       await sendWelcome(ctx, member, ctx.message.date);
     }
 
@@ -155,8 +205,23 @@ function registerGroupWelcomeHandler(bot, { chatId, photoPath }) {
     const isGroup = ['group', 'supergroup'].includes(ctx.chat?.type);
     const joined = isJoinTransition(event);
 
-    if (isWelcomeChat && isGroup && joined) {
-      await sendWelcome(ctx, event.new_chat_member.user, event.date);
+    if (isWelcomeChat && isGroup) {
+      const member = event.new_chat_member.user;
+      try {
+        if (joined) {
+          await saveJoin(ctx.chatId, member, event.date, event.new_chat_member.status);
+        } else {
+          await memberStore.recordMembershipStatus(
+            ctx.chatId,
+            member,
+            event.new_chat_member.status,
+            event.date,
+          );
+        }
+      } catch (error) {
+        logger.error(`그룹 회원 상태 저장 실패 (${ctx.chatId}:${member.id}): ${error.message}`);
+      }
+      if (joined) await sendWelcome(ctx, member, event.date);
     }
 
     return next();
