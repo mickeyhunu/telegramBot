@@ -15,6 +15,7 @@ async function getActiveBusinessAds(databasePool) {
     SELECT id, district, business_name, manager_name, telegram_id, manager_contact
     FROM business_ads
     WHERE registration_status = 'REGISTERED'
+      AND plan_type IN ('PREMIUM', 'PLUS')
       AND (
         (activated_until IS NOT NULL AND activated_until > NOW())
         OR
