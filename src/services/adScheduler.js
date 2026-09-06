@@ -44,12 +44,13 @@ async function readActiveBusinessAds(pool) {
     `SELECT id, title, image_url, manager_contact, kakao_talk_id, telegram_id
        FROM business_ads
       WHERE registration_status = 'REGISTERED'
+        AND plan_type IN ('PREMIUM', 'PLUS')
         AND (
           (activated_until IS NOT NULL AND activated_until > NOW())
           OR
           (piece_activated_until IS NOT NULL AND piece_activated_until > NOW())
         )
-      ORDER BY display_order ASC, id ASC`,
+      ORDER BY id ASC`,
   );
   return rows;
 }
@@ -71,8 +72,9 @@ function createBusinessAdsSender(api, pool, groups, options = {}) {
       return;
     }
 
-    const previousIndex = rows.findIndex((row) => String(row.id) === String(lastAdId));
-    const row = rows[(previousIndex + 1) % rows.length];
+    const row = lastAdId === null
+      ? rows[0]
+      : rows.find((candidate) => BigInt(candidate.id) > BigInt(lastAdId)) || rows[0];
     const ad = {
       name: `business_ads #${row.id}`,
       groups,
