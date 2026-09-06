@@ -218,6 +218,14 @@ class GroupMemberStore {
       return member;
     });
   }
+
+  resetWarnings(chatId, user) {
+    return this.updateMember(chatId, user, (member) => {
+      member.moderation.warningCount = 0;
+      member.moderation.warnings = [];
+      return member;
+    });
+  }
 }
 
 function isCurrentStatus(status) {
