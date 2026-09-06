@@ -7,6 +7,7 @@ const { registerGroupSpamHandler } = require('./handlers/groupSpam');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
 const { createGroupMemberStore } = require('./services/groupMembers');
+const { startAdScheduler } = require('./services/adScheduler');
 
 function createBot(token, { databasePools, env = process.env } = {}) {
   if (!token) throw new Error('BOT_TOKEN 환경 변수가 필요합니다.');
@@ -38,6 +39,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     chatId: config.welcomeChatId,
     memberStore: groupMemberStore,
   });
+  bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath);
   bot.catch((error) => console.error('Telegram bot handler failed:', error));
   return bot;
 }

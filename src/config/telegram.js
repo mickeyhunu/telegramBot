@@ -19,6 +19,8 @@ function readTelegramConfig(env = process.env) {
       || path.resolve(__dirname, '../../assets/group-welcome.png'),
     groupMemberStorePath: env.TELEGRAM_MEMBER_STORE_PATH
       || path.resolve(__dirname, '../../data/group-members.json'),
+    adsConfigPath: env.TELEGRAM_ADS_CONFIG_PATH
+      || path.resolve(__dirname, '../../data/ads.json'),
     subscriptionChats: [
       { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
       { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
