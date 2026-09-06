@@ -143,12 +143,12 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
         });
       } else if (command === '강퇴') {
         action = 'kick';
-        result = '👢 강퇴했습니다. 다시 가입할 수 있습니다.';
+        result = '👢 강퇴했습니다.';
         await ctx.api.banChatMember({ chat_id: ctx.chatId, user_id: target.id });
         await ctx.api.unbanChatMember({ chat_id: ctx.chatId, user_id: target.id, only_if_banned: true });
       } else {
         action = 'ban';
-        result = '🚫 밴 처리했습니다. 다시 가입할 수 없습니다.';
+        result = '🚫 밴 처리했습니다.';
         await ctx.api.banChatMember({ chat_id: ctx.chatId, user_id: target.id });
       }
 
