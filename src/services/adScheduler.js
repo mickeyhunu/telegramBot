@@ -10,6 +10,77 @@ const { fromPath } = require('node-telegram-bot-api/node');
 
 const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function normalizeTelegramId(value) {
+  return String(value ?? '').trim().replace(/^@+/, '');
+}
+
+function formatBusinessAd(row) {
+  const lines = [
+    `<b>⭐️ ${escapeHtml(row.title)} ⭐️</b>`,
+    '',
+    `<b>💎 연락처 : ${escapeHtml(row.manager_contact)}</b>`,
+  ];
+  const kakaoTalkId = String(row.kakao_talk_id ?? '').trim();
+  if (kakaoTalkId) lines.push(`<b>💎 카카오톡 : ${escapeHtml(kakaoTalkId)}</b>`);
+
+  const telegramId = normalizeTelegramId(row.telegram_id);
+  if (telegramId) {
+    const escapedId = escapeHtml(telegramId);
+    lines.push(`<b>💎 텔레그램 :</b> <a href="https://t.me/${encodeURIComponent(telegramId)}"><b>@${escapedId}</b></a>`);
+  }
+  return lines.join('\n');
+}
+
+async function readActiveBusinessAds(pool) {
+  const [rows] = await pool.execute(
+    `SELECT id, title, image_url, manager_contact, kakao_talk_id, telegram_id
+       FROM business_ads
+      WHERE is_active = 1
+      ORDER BY display_order ASC, id ASC`,
+  );
+  return rows;
+}
+
+function createBusinessAdsSender(api, pool, groups, options = {}) {
+  const logger = options.logger || console;
+  let lastAdId = null;
+
+  return async () => {
+    let rows;
+    try {
+      rows = await readActiveBusinessAds(pool);
+    } catch (error) {
+      logger.error(`[ads] business_ads 조회 실패: ${error.message}`);
+      return;
+    }
+    if (rows.length === 0) {
+      logger.info('[ads] 전송할 활성 business_ads가 없습니다.');
+      return;
+    }
+
+    const previousIndex = rows.findIndex((row) => String(row.id) === String(lastAdId));
+    const row = rows[(previousIndex + 1) % rows.length];
+    const ad = {
+      name: `business_ads #${row.id}`,
+      groups,
+      message: formatBusinessAd(row),
+      photo: String(row.image_url || '').trim() || null,
+      parseMode: 'HTML',
+      disableNotification: options.disableNotification === true,
+    };
+    await sendAd(api, ad, logger);
+    lastAdId = row.id;
+  };
+}
+
 function readAdsConfig(configPath) {
   if (!fs.existsSync(configPath)) return { ads: [] };
 
@@ -26,7 +97,8 @@ function normalizeAd(ad, index, configDirectory) {
   if (!Array.isArray(ad.groups) || ad.groups.length === 0) {
     throw new Error(`${label}.groups에 한 개 이상의 그룹 ID가 필요합니다.`);
   }
-  if (typeof ad.message !== 'string' || !ad.message.trim()) {
+  const source = ad.source === 'business_ads' ? 'business_ads' : 'static';
+  if (source === 'static' && (typeof ad.message !== 'string' || !ad.message.trim())) {
     throw new Error(`${label}.message가 필요합니다.`);
   }
 
@@ -51,6 +123,7 @@ function normalizeAd(ad, index, configDirectory) {
     photo,
     parseMode: ad.parseMode || undefined,
     disableNotification: ad.disableNotification === true,
+    source,
     startAt,
     intervalMs: repeatMinutes * 60_000,
   };
@@ -70,7 +143,8 @@ async function sendAd(api, ad, logger = console) {
         disable_notification: ad.disableNotification,
       };
       if (ad.photo) {
-        await api.sendPhoto({ ...common, photo: await fromPath(ad.photo), caption: ad.message });
+        const photo = /^https?:\/\//i.test(ad.photo) ? ad.photo : await fromPath(ad.photo);
+        await api.sendPhoto({ ...common, photo, caption: ad.message });
       } else {
         await api.sendMessage({ ...common, text: ad.message });
       }
@@ -81,7 +155,7 @@ async function sendAd(api, ad, logger = console) {
   }
 }
 
-function scheduleAd(api, ad, { logger = console, now = Date.now } = {}) {
+function scheduleAd(api, ad, { logger = console, now = Date.now, send = () => sendAd(api, ad, logger) } = {}) {
   let timer;
   let stopped = false;
   let target = nextRunAt(ad.startAt, ad.intervalMs, now());
@@ -97,7 +171,7 @@ function scheduleAd(api, ad, { logger = console, now = Date.now } = {}) {
         arm();
         return;
       }
-      await sendAd(api, ad, logger);
+      await send();
       target += ad.intervalMs;
       if (target <= now()) {
         target += Math.ceil((now() - target + 1) / ad.intervalMs) * ad.intervalMs;
@@ -114,7 +188,7 @@ function scheduleAd(api, ad, { logger = console, now = Date.now } = {}) {
   };
 }
 
-function startAdScheduler(api, configPath, { logger = console, now } = {}) {
+function startAdScheduler(api, configPath, { logger = console, now, businessAdsPool } = {}) {
   let config;
   try {
     config = readAdsConfig(configPath);
@@ -128,7 +202,16 @@ function startAdScheduler(api, configPath, { logger = console, now } = {}) {
     try {
       const ad = normalizeAd(rawAd, index, path.dirname(configPath));
       if (!ad.enabled) continue;
-      stops.push(scheduleAd(api, ad, { logger, now }));
+      if (ad.source === 'business_ads' && !businessAdsPool) {
+        throw new Error(`ads[${index}].source가 business_ads이지만 MNMS DB 풀이 없습니다.`);
+      }
+      const send = ad.source === 'business_ads'
+        ? createBusinessAdsSender(api, businessAdsPool, ad.groups, {
+          logger,
+          disableNotification: ad.disableNotification,
+        })
+        : undefined;
+      stops.push(scheduleAd(api, ad, { logger, now, send }));
       logger.info(`[ads] 예약 등록: ${ad.name}, 그룹 ${ad.groups.length}개`);
     } catch (error) {
       logger.error(`[ads] 예약 제외: ${error.message}`);
@@ -139,9 +222,13 @@ function startAdScheduler(api, configPath, { logger = console, now } = {}) {
 }
 
 module.exports = {
+  createBusinessAdsSender,
+  escapeHtml,
+  formatBusinessAd,
   nextRunAt,
   normalizeAd,
   readAdsConfig,
+  readActiveBusinessAds,
   sendAd,
   startAdScheduler,
 };

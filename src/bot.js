@@ -39,7 +39,9 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     chatId: config.welcomeChatId,
     memberStore: groupMemberStore,
   });
-  bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath);
+  bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath, {
+    businessAdsPool: pools.mnms,
+  });
   bot.catch((error) => console.error('Telegram bot handler failed:', error));
   return bot;
 }
