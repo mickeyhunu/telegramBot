@@ -14,7 +14,12 @@ async function getActiveBusinessAds(databasePool) {
   const [rows] = await databasePool.execute(`
     SELECT id, district, business_name, manager_name, telegram_id, manager_contact
     FROM business_ads
-    WHERE is_active = 1
+    WHERE registration_status = 'REGISTERED'
+      AND (
+        (activated_until IS NOT NULL AND activated_until > NOW())
+        OR
+        (piece_activated_until IS NOT NULL AND piece_activated_until > NOW())
+      )
     ORDER BY ${BUSINESS_ADS_ORDER}
   `);
 

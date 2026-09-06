@@ -43,7 +43,12 @@ async function readActiveBusinessAds(pool) {
   const [rows] = await pool.execute(
     `SELECT id, title, image_url, manager_contact, kakao_talk_id, telegram_id
        FROM business_ads
-      WHERE is_active = 1
+      WHERE registration_status = 'REGISTERED'
+        AND (
+          (activated_until IS NOT NULL AND activated_until > NOW())
+          OR
+          (piece_activated_until IS NOT NULL AND piece_activated_until > NOW())
+        )
       ORDER BY display_order ASC, id ASC`,
   );
   return rows;
