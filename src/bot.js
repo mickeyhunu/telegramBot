@@ -2,6 +2,7 @@ const { Bot } = require('node-telegram-bot-api');
 const { readTelegramConfig } = require('./config/telegram');
 const { registerMenuHandlers, sendSubscriptionGate } = require('./handlers/menu');
 const { registerGroupWelcomeHandler } = require('./handlers/groupWelcome');
+const { registerGroupModerationHandler } = require('./handlers/groupModeration');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
 const { createGroupMemberStore } = require('./services/groupMembers');
@@ -26,6 +27,10 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   registerGroupWelcomeHandler(bot, {
     chatId: config.welcomeChatId,
     photoPath: config.welcomePhotoPath,
+    memberStore: groupMemberStore,
+  });
+  registerGroupModerationHandler(bot, {
+    chatId: config.welcomeChatId,
     memberStore: groupMemberStore,
   });
   bot.catch((error) => console.error('Telegram bot handler failed:', error));

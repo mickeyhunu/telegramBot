@@ -162,6 +162,46 @@ class GroupMemberStore {
     const store = await this.readStore();
     return store.members[memberKey(chatId, userId)] || null;
   }
+
+  async findMemberByUsername(chatId, username) {
+    await this.pendingOperation;
+    const store = await this.readStore();
+    const normalizedUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
+    if (!normalizedUsername) return null;
+
+    return Object.values(store.members).find((member) => (
+      String(member.chatId) === String(chatId)
+      && String(member.username || '').toLowerCase() === normalizedUsername
+    )) || null;
+  }
+
+  recordModeration(
+    chatId,
+    user,
+    action,
+    occurredAt = Math.floor(Date.now() / 1000),
+    { mutedUntil } = {},
+  ) {
+    const occurredAtIso = new Date(occurredAt * 1000).toISOString();
+    return this.updateMember(chatId, user, (member) => {
+      if (action === 'mute') {
+        member.moderation.mutedUntil = mutedUntil
+          ? new Date(mutedUntil * 1000).toISOString()
+          : 'indefinite';
+      }
+      if (action === 'unmute') member.moderation.mutedUntil = null;
+      if (action === 'ban') {
+        member.moderation.bannedAt = occurredAtIso;
+        member.membership.status = 'kicked';
+      }
+      if (action === 'kick') {
+        member.moderation.kickedAt = occurredAtIso;
+        member.membership.status = 'left';
+      }
+      member.membership.lastUpdatedAt = occurredAtIso;
+      return member;
+    });
+  }
 }
 
 function isCurrentStatus(status) {
