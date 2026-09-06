@@ -1,0 +1,160 @@
+const MODERATION_COMMAND = /^\/(뮤트해제|뮤트|강퇴|밴)(?:@[A-Za-z0-9_]+)?(?:\s+(@?[A-Za-z0-9_]+))?(?:\s+(\S+))?\s*$/u;
+
+const MUTED_PERMISSIONS = Object.freeze({
+  can_send_messages: false,
+  can_send_audios: false,
+  can_send_documents: false,
+  can_send_photos: false,
+  can_send_videos: false,
+  can_send_video_notes: false,
+  can_send_voice_notes: false,
+  can_send_polls: false,
+  can_send_other_messages: false,
+  can_add_web_page_previews: false,
+});
+
+const UNMUTED_PERMISSIONS = Object.freeze({
+  can_send_messages: true,
+  can_send_audios: true,
+  can_send_documents: true,
+  can_send_photos: true,
+  can_send_videos: true,
+  can_send_video_notes: true,
+  can_send_voice_notes: true,
+  can_send_polls: true,
+  can_send_other_messages: true,
+  can_add_web_page_previews: true,
+});
+
+const MAX_MUTE_MINUTES = 365 * 24 * 60;
+
+function displayName(user) {
+  if (user.username) return `@${user.username}`;
+  return [user.first_name, user.last_name].filter(Boolean).join(' ') || String(user.id);
+}
+
+function storedUser(member) {
+  return member && {
+    id: member.userId,
+    username: member.username,
+    first_name: member.firstName,
+    last_name: member.lastName,
+    is_bot: member.isBot,
+    language_code: member.languageCode,
+  };
+}
+
+async function resolveTarget(ctx, memberStore, targetText) {
+  const repliedUser = ctx.message?.reply_to_message?.from;
+  if (repliedUser) return repliedUser;
+  if (!targetText) return null;
+
+  if (/^\d+$/.test(targetText)) {
+    const userId = Number(targetText);
+    return storedUser(await memberStore.getMember(ctx.chatId, userId)) || { id: userId };
+  }
+
+  return storedUser(await memberStore.findMemberByUsername(ctx.chatId, targetText));
+}
+
+function registerGroupModerationHandler(bot, { chatId, memberStore, logger = console }) {
+  bot.on('message', async (ctx, next) => {
+    const match = MODERATION_COMMAND.exec(ctx.message?.text || '');
+    if (!match) return next();
+
+    const isConfiguredGroup = chatId
+      && String(ctx.chatId) === String(chatId)
+      && ['group', 'supergroup'].includes(ctx.chat?.type);
+    if (!isConfiguredGroup) return next();
+
+    try {
+      const actor = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: ctx.from.id });
+      if (!['creator', 'administrator'].includes(actor.status)) {
+        await ctx.reply('⛔ 관리자만 사용할 수 있는 명령어입니다.');
+        return undefined;
+      }
+
+      const [, command, targetText, durationText] = match;
+      const durationMinutes = durationText === undefined ? null : Number(durationText);
+      if (command === '뮤트' && durationText !== undefined
+        && (!/^\d+$/.test(durationText)
+          || !Number.isSafeInteger(durationMinutes)
+          || durationMinutes < 1
+          || durationMinutes > MAX_MUTE_MINUTES)) {
+        await ctx.reply(`뮤트 시간은 1~${MAX_MUTE_MINUTES} 사이의 숫자(분)로 입력해 주세요. 예: /뮤트 @아이디 30`);
+        return undefined;
+      }
+      if (command !== '뮤트' && durationText !== undefined) {
+        await ctx.reply(`/${command} 명령어에는 시간 값을 입력할 수 없습니다.`);
+        return undefined;
+      }
+      const target = await resolveTarget(ctx, memberStore, targetText);
+      if (!target) {
+        await ctx.reply('대상을 찾을 수 없습니다. 명령어 뒤에 @아이디를 입력하거나 대상 메시지에 답장해 주세요.');
+        return undefined;
+      }
+      if (target.id === ctx.from.id) {
+        await ctx.reply('본인에게는 이 명령어를 사용할 수 없습니다.');
+        return undefined;
+      }
+
+      const membership = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: target.id });
+      if (['creator', 'administrator'].includes(membership.status)) {
+        await ctx.reply('다른 관리자에게는 이 명령어를 사용할 수 없습니다.');
+        return undefined;
+      }
+
+      let action;
+      let result;
+      let moderationDetails;
+      if (command === '뮤트' || command === '뮤트해제') {
+        const muted = command === '뮤트';
+        action = muted ? 'mute' : 'unmute';
+        const mutedUntil = muted && durationMinutes
+          ? ctx.message.date + (durationMinutes * 60)
+          : null;
+        moderationDetails = mutedUntil ? { mutedUntil } : undefined;
+        result = muted
+          ? `🔊 ${durationMinutes ? `${durationMinutes}분간 ` : ''}뮤트 처리했습니다. 채팅이 제한됩니다.`
+          : '🔊 뮤트를 해제했습니다.';
+        await ctx.api.restrictChatMember({
+          chat_id: ctx.chatId,
+          user_id: target.id,
+          permissions: muted ? MUTED_PERMISSIONS : UNMUTED_PERMISSIONS,
+          ...(mutedUntil ? { until_date: mutedUntil } : {}),
+        });
+      } else if (command === '강퇴') {
+        action = 'kick';
+        result = '👢 강퇴했습니다. 다시 가입할 수 있습니다.';
+        await ctx.api.banChatMember({ chat_id: ctx.chatId, user_id: target.id });
+        await ctx.api.unbanChatMember({ chat_id: ctx.chatId, user_id: target.id, only_if_banned: true });
+      } else {
+        action = 'ban';
+        result = '🚫 밴 처리했습니다. 다시 가입할 수 없습니다.';
+        await ctx.api.banChatMember({ chat_id: ctx.chatId, user_id: target.id });
+      }
+
+      await memberStore.recordModeration(
+        ctx.chatId,
+        target,
+        action,
+        ctx.message.date,
+        moderationDetails,
+      );
+      await ctx.reply(`${displayName(target)}님을 ${result}`);
+    } catch (error) {
+      logger.error(`그룹 관리 명령 처리 실패 (${ctx.chatId}:${ctx.from?.id}): ${error.message}`);
+      await ctx.reply('명령을 처리하지 못했습니다. 봇의 관리자 권한을 확인해 주세요.');
+    }
+    return undefined;
+  });
+}
+
+module.exports = {
+  MODERATION_COMMAND,
+  MAX_MUTE_MINUTES,
+  MUTED_PERMISSIONS,
+  UNMUTED_PERMISSIONS,
+  registerGroupModerationHandler,
+  resolveTarget,
+};
