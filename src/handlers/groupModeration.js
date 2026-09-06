@@ -70,7 +70,6 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
     try {
       const actor = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: ctx.from.id });
       if (!['creator', 'administrator'].includes(actor.status)) {
-        await ctx.reply('⛔ 관리자만 사용할 수 있는 명령어입니다.');
         return undefined;
       }
 
@@ -85,7 +84,6 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
         return undefined;
       }
       if (command !== '뮤트' && durationText !== undefined) {
-        await ctx.reply(`/${command} 명령어에는 시간 값을 입력할 수 없습니다.`);
         return undefined;
       }
       const target = await resolveTarget(ctx, memberStore, targetText);
