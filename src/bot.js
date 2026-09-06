@@ -3,6 +3,7 @@ const { readTelegramConfig } = require('./config/telegram');
 const { registerMenuHandlers, sendSubscriptionGate } = require('./handlers/menu');
 const { registerGroupWelcomeHandler } = require('./handlers/groupWelcome');
 const { registerGroupModerationHandler } = require('./handlers/groupModeration');
+const { registerGroupSpamHandler } = require('./handlers/groupSpam');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
 const { createGroupMemberStore } = require('./services/groupMembers');
@@ -30,6 +31,10 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     memberStore: groupMemberStore,
   });
   registerGroupModerationHandler(bot, {
+    chatId: config.welcomeChatId,
+    memberStore: groupMemberStore,
+  });
+  registerGroupSpamHandler(bot, {
     chatId: config.welcomeChatId,
     memberStore: groupMemberStore,
   });

@@ -202,6 +202,30 @@ class GroupMemberStore {
       return member;
     });
   }
+
+  recordWarning(
+    chatId,
+    user,
+    reason,
+    occurredAt = Math.floor(Date.now() / 1000),
+    issuedBy = null,
+  ) {
+    const occurredAtIso = new Date(occurredAt * 1000).toISOString();
+    return this.updateMember(chatId, user, (member) => {
+      member.moderation.warningCount += 1;
+      member.moderation.warnings.push({ reason, occurredAt: occurredAtIso, issuedBy });
+      member.membership.lastUpdatedAt = occurredAtIso;
+      return member;
+    });
+  }
+
+  resetWarnings(chatId, user) {
+    return this.updateMember(chatId, user, (member) => {
+      member.moderation.warningCount = 0;
+      member.moderation.warnings = [];
+      return member;
+    });
+  }
 }
 
 function isCurrentStatus(status) {
