@@ -33,8 +33,8 @@ npm start
 나머지 봇 기능은 그대로 실행됩니다.
 
 - `groups`: 전송할 숫자 그룹/슈퍼그룹 ID 배열 (`-100...`)
-- `source`: `business_ads`로 설정하면 MNMS DB의 `is_active = 1`인 업체를
-  `display_order`, `id` 순으로 한 개씩 순환 전송합니다.
+- `source`: `business_ads`로 설정하면 MNMS DB에서 등록이 완료되고 일반 또는 조각 광고
+  활성 기간이 남은 업체를 `display_order`, `id` 순으로 한 개씩 순환 전송합니다.
 - `startTime`: 시간대가 포함된 ISO 8601 최초 전송 시각(예: `2026-09-07T09:00:00+09:00`)
 - `repeatMinutes`: 반복 간격(분). 매시간 전송하려면 `60`을 입력합니다.
 - `enabled`: `false`인 광고는 예약하지 않습니다.
