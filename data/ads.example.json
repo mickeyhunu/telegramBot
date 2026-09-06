@@ -1,0 +1,15 @@
+{
+  "ads": [
+    {
+      "name": "매시간 정기 홍보",
+      "enabled": true,
+      "groups": ["-1001234567890", "-1009876543210"],
+      "message": "<b>미드나잇맨즈 정기 안내</b>\n\n홍보 문구를 여기에 입력하세요.",
+      "photo": "../assets/group-welcome.png",
+      "startTime": "2026-09-07T09:00:00+09:00",
+      "repeatMinutes": 60,
+      "parseMode": "HTML",
+      "disableNotification": false
+    }
+  ]
+}

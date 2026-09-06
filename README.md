@@ -14,6 +14,7 @@
 - `TELEGRAM_WELCOME_PHOTO_PATH`: 그룹 환영 이미지 경로(선택 사항)
 - `TELEGRAM_MEMBER_STORE_PATH`: 그룹 회원 정보 JSON 저장 경로(선택 사항,
   기본값 `data/group-members.json`)
+- `TELEGRAM_ADS_CONFIG_PATH`: 반복 광고 JSON 경로(선택 사항, 기본값 `data/ads.json`)
 - `MNMS_MYSQL_*`: 개인 메뉴의 제휴업체 정보를 조회할 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: 개인 메뉴의 LIVE 정보를 조회할 데이터베이스 접속 정보
 - `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`:
@@ -23,6 +24,25 @@
 npm install
 npm start
 ```
+
+## 그룹 반복 광고
+
+`data/ads.example.json`을 `data/ads.json`으로 복사한 뒤 광고별로 대상 그룹 ID,
+문구, 사진, 최초 전송 시각과 반복 간격을 설정합니다. 봇을 대상 그룹의 관리자로 추가하고
+메시지 및 사진 전송 권한을 부여해야 합니다. 설정 파일이 없으면 광고 기능만 비활성화되며
+나머지 봇 기능은 그대로 실행됩니다.
+
+- `groups`: 전송할 숫자 그룹/슈퍼그룹 ID 배열 (`-100...`)
+- `message`: 전송할 문구. `parseMode`가 `HTML`이면 HTML 태그를 사용할 수 있습니다.
+- `photo`: 설정 JSON 파일 기준 상대 이미지 경로(선택 사항). 생략하면 텍스트만 전송합니다.
+- `startTime`: 시간대가 포함된 ISO 8601 최초 전송 시각(예: `2026-09-07T09:00:00+09:00`)
+- `repeatMinutes`: 반복 간격(분). 매시간 전송하려면 `60`을 입력합니다.
+- `enabled`: `false`인 광고는 예약하지 않습니다.
+- `disableNotification`: `true`이면 알림음 없이 전송합니다.
+
+시작 시각이 이미 지났다면 최초 시각을 기준으로 계산한 다음 반복 시각부터 전송합니다.
+설정을 변경한 뒤에는 봇을 재시작해야 새 설정이 반영됩니다. 한 그룹 전송이 실패해도 같은
+광고의 다른 그룹 전송 및 이후 반복 예약은 계속 진행되며 결과는 `[ads]` 로그에 기록됩니다.
 
 ## 그룹 신규 멤버 환영 메시지
 
