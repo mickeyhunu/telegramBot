@@ -44,6 +44,27 @@ function storedUser(member) {
   };
 }
 
+function isAnonymousGroupAdministrator(ctx) {
+  const senderChat = ctx.message?.sender_chat;
+  return senderChat
+    && ['group', 'supergroup'].includes(senderChat.type)
+    && String(senderChat.id) === String(ctx.chatId);
+}
+
+async function isAdministrator(ctx) {
+  // Telegram replaces `from` with the GroupAnonymousBot account when an
+  // administrator sends as the group. In that case sender_chat identifies the
+  // current group and is sufficient proof that Telegram accepted the sender as
+  // an anonymous administrator. Do not run getChatMember for the placeholder
+  // account, because its status is not administrator and every command would be
+  // silently ignored.
+  if (isAnonymousGroupAdministrator(ctx)) return true;
+  if (!ctx.from?.id) return false;
+
+  const actor = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: ctx.from.id });
+  return ['creator', 'administrator'].includes(actor.status);
+}
+
 async function resolveTarget(ctx, memberStore, targetText) {
   const repliedUser = ctx.message?.reply_to_message?.from;
   if (repliedUser) return repliedUser;
@@ -68,8 +89,7 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
     if (!isConfiguredGroup) return next();
 
     try {
-      const actor = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: ctx.from.id });
-      if (!['creator', 'administrator'].includes(actor.status)) {
+      if (!await isAdministrator(ctx)) {
         return undefined;
       }
 
