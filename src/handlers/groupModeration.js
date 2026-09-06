@@ -1,4 +1,4 @@
-const MODERATION_COMMAND = /^\/(뮤트해제|뮤트|강퇴|밴)(?:@[A-Za-z0-9_]+)?(?:\s+(@?[A-Za-z0-9_]+))?(?:\s+(\S+))?\s*$/u;
+const MODERATION_COMMAND = /^\/(경고|뮤트해제|뮤트|강퇴|밴)(?:@[A-Za-z0-9_]+)?(?:\s+(@?[A-Za-z0-9_]+))?(?:\s+(\S+))?\s*$/u;
 
 const MUTED_PERMISSIONS = Object.freeze({
   can_send_messages: false,
@@ -119,6 +119,14 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
       const membership = await ctx.api.getChatMember({ chat_id: ctx.chatId, user_id: target.id });
       if (['creator', 'administrator'].includes(membership.status)) {
         await ctx.reply('다른 관리자에게는 이 명령어를 사용할 수 없습니다.');
+        return undefined;
+      }
+
+      if (command === '경고') {
+        // Load lazily to keep the shared warning escalation code independent
+        // while groupSpam imports this module's Telegram permission constants.
+        const { applyWarning } = require('./groupSpam');
+        await applyWarning(ctx, memberStore, target, '관리자 수동 경고', ctx.from?.id || null);
         return undefined;
       }
 
