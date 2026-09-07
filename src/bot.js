@@ -5,6 +5,7 @@ const { registerGroupWelcomeHandler } = require('./handlers/groupWelcome');
 const { registerGroupModerationHandler } = require('./handlers/groupModeration');
 const { registerGroupSpamHandler } = require('./handlers/groupSpam');
 const { registerTextEffectsHandler } = require('./handlers/textEffects');
+const { registerIdentifierHandlers } = require('./handlers/identifiers');
 const { registerChatEntryLogger } = require('./handlers/chatEntryLogger');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
@@ -47,6 +48,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     memberStore: groupMemberStore,
   });
   registerTextEffectsHandler(bot);
+  registerIdentifierHandlers(bot);
   bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath, {
     businessAdsPool: pools.mnms,
   });

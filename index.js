@@ -8,7 +8,7 @@ if (require.main === module) {
     // Telegram remembers allowed_updates from an earlier getUpdates call when
     // this is omitted. Declare every update type used by this bot explicitly,
     // including membership updates needed for welcome diagnostics.
-    allowedUpdates: ['message', 'callback_query', 'chat_member', 'my_chat_member'],
+    allowedUpdates: ['message', 'channel_post', 'callback_query', 'chat_member', 'my_chat_member'],
     onError: (error) => console.error('[polling] getUpdates failed; retrying:', error),
   }).catch((error) => {
     console.error('[polling] bot stopped unexpectedly:', error);
