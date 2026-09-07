@@ -239,6 +239,7 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     '',
     businessLinks.join('\n'),
     '',
+    '<a href="https://t.me/mnmens_official">💬[문의하기]</a>',
     '<a href="https://t.me/mnmens_bot">🤖[AI 유흥 실시간정보 보러가기]</a>',
   ].join('\n');
 }
@@ -253,7 +254,9 @@ function partnershipListMessage() {
     '',
     '💎<a href="https://t.me/c/4403977899/11"><b>유흥 제휴 리스트</b></a>',
     '',
-    '💎<a href="https://t.me/c/1063767278/9659"><b>업자 제휴 리스트</b></a>',
+    //'💎<a href="https://t.me/c/1063767278/9659"><b>업자 제휴 리스트</b></a>',
+    '',
+    '<a href="https://t.me/mnmens_official">💬[문의하기]</a>',
   ].join('\n');
 }
 

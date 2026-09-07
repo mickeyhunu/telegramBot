@@ -10,7 +10,7 @@ const DEFAULT_LINKS = Object.freeze({
   rbti: 'https://nightmens.com/play/rbti',
   wiki: 'https://nightmens.com/play/wiki',
   partners: 'https://nightmens.com/business-info',
-  support: 'https://t.me/mnmens_offical',
+  support: 'https://t.me/mnmens_official',
 });
 
 function readTelegramConfig(env = process.env) {

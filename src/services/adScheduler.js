@@ -59,6 +59,7 @@ function formatBusinessAd(row) {
     const escapedId = escapeHtml(telegramId);
     lines.push(`<b>💎 텔레그램 :</b> <a href="https://t.me/${encodeURIComponent(telegramId)}"><b>@${escapedId}</b></a>`);
   }
+  lines.push(`\n<a href=\"https://t.me/c/4403977899/11\">🤝[전체 제휴업소 보러가기]</a>`);
   return lines.join('\n');
 }
 
