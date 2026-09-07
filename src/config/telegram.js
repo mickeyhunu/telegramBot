@@ -1,8 +1,8 @@
 const path = require('node:path');
 
 const WEBSITE_URL = 'https://nightmens.com/';
-const ANNOUNCEMENT_URL = 'https://t.me/+1hcSUQN8lNswZTM1';
-const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
+const ANNOUNCEMENT_URL = 'https://t.me/+FQkKfTav5YFlYjc1';
+const COMMUNITY_URL = 'https://t.me/+op8TPEZI9txhZDZl';
 const DEFAULT_PARTNERS_CHANNEL_ID = '-1004488893219';
 
 const DEFAULT_LINKS = Object.freeze({

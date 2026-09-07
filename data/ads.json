@@ -11,8 +11,8 @@
       "inlineKeyboard": [
         [
           {
-            "text": "문의하기",
-            "url": "https://t.me/mnmens_offical"
+            "text": "💬 문의하기",
+            "url": "https://t.me/mnmens_official"
           }
         ]
       ]
@@ -32,7 +32,7 @@
       "name": "유흥 소통 커뮤니티 홍보",
       "enabled": true,
       "groups": ["-1002461380738"],
-      "message": "<b>⭐️ 유흥 소통 커뮤니티! ⭐️</b>\n\n<a href=\"https://t.me/+_mzPGLwIEBIyMjll\">🌙 [미드나잇맨즈 소통방]</a>\n\n⚱️룸돌이 형들 환영합니다!\n\n👩‍❤️‍👨강남 쩜오.하퍼 최저가 제휴업소\n최신소식 공유\n\n<a href=\"https://t.me/mnmens_bot\">🤖[AI 유흥 실시간정보 보러가기]</a>",
+      "message": "<b>⭐️ 유흥 소통 커뮤니티! ⭐️</b>\n\n<a href=\"https://t.me/+op8TPEZI9txhZDZl\">🌙 [미드나잇맨즈 소통방]</a>\n\n⚱️룸돌이 형들 환영합니다!\n\n👩‍❤️‍👨강남 쩜오.하퍼 최저가 제휴업소\n최신소식 공유\n\n<a href=\"https://t.me/mnmens_bot\">🤖[AI 유흥 실시간정보 보러가기]</a>",
       "photo": "../assets/ads/poster1.png",
       "startTime": "2026-09-07T00:00:00+09:00",
       "repeatMinutes": 30,
@@ -40,7 +40,7 @@
       "disableNotification": false,
       "inlineKeyboard": [
         [
-          { "text": "문의하기", "url": "https://t.me/mnmens_official" }
+          { "text": "💬 문의하기", "url": "https://t.me/mnmens_official" }
         ]
       ]
     }
