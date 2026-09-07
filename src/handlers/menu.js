@@ -148,6 +148,7 @@ async function verifySubscriptions(ctx, config) {
 
 function registerMenuHandlers(bot, {
   config,
+  usageStore,
   requireSubscriptions = (_ctx, next) => next(),
   businessAdsPool,
   loadActiveBusinessAds = getActiveBusinessAds,
@@ -158,6 +159,11 @@ function registerMenuHandlers(bot, {
 }) {
   bot.command('start', async (ctx) => {
     if (ctx.chat?.type !== 'private') return undefined;
+    try {
+      await usageStore?.recordStart(ctx.from, ctx.message.date);
+    } catch (error) {
+      console.error(`개인 채팅 /start 사용자 정보 저장 실패 (${ctx.from?.id}): ${error.message}`);
+    }
     await clearRecentPrivateMessages(ctx);
     return startSubscriptionFlow(ctx, config);
   });
