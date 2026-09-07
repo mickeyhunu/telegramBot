@@ -58,16 +58,19 @@ async function clearRecentPrivateMessages(ctx, logger = console) {
   const latestMessageId = ctx.message?.message_id;
   if (ctx.chat?.type !== 'private' || !latestMessageId) return;
 
-  // Keep the /start command itself and clean up only the messages before it.
-  const firstMessageId = Math.max(1, latestMessageId - TELEGRAM_DELETE_BATCH_SIZE);
-  const messageIds = Array.from(
-    { length: latestMessageId - firstMessageId },
-    (_, index) => firstMessageId + index,
-  );
+  // Telegram accepts at most 100 IDs in one deleteMessages call. Walk all the
+  // way back through the private chat in batches, newest first, while keeping
+  // the /start command that triggered this cleanup.
+  for (let lastMessageId = latestMessageId - 1; lastMessageId >= 1;) {
+    const firstMessageId = Math.max(1, lastMessageId - TELEGRAM_DELETE_BATCH_SIZE + 1);
+    const messageIds = Array.from(
+      { length: lastMessageId - firstMessageId + 1 },
+      (_, index) => firstMessageId + index,
+    );
 
-  if (!messageIds.length) return;
-
-  await deleteMessagesBestEffort(ctx, messageIds, logger);
+    await deleteMessagesBestEffort(ctx, messageIds, logger);
+    lastMessageId = firstMessageId - 1;
+  }
 }
 
 async function sendPrivateMenu(ctx, config) {
