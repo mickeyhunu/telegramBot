@@ -219,23 +219,16 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     ? partnerBusinesses.map(({
       id,
       manager_name: managerName,
-      telegram_id: telegramId,
-      manager_contact: managerContact,
       url,
       ...business
     }) => ({
       label: formatPartnerBusinessName({ ...business, manager_name: managerName }),
-      telegramId: String(telegramId || '').trim().replace(/^@+/, ''),
-      managerContact: String(managerContact || '').trim(),
       url: url || `${baseUrl}/${encodeURIComponent(id)}`,
     }))
     : [{ label: '제휴업체 전체보기', url: links.partners }];
-  const businessLinks = businesses.map(({
-    label, telegramId, managerContact, url,
-  }) => [
-    `💎 <a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`,
-    telegramId ? `@${escapeHtml(telegramId)}` : managerContact && escapeHtml(managerContact),
-  ].filter(Boolean).join(' '));
+  const businessLinks = businesses.map(({ label, url }) => (
+    `💎 <a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`
+  ));
 
   const separator = '➖'.repeat(12);
 
