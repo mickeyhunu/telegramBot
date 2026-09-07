@@ -17,9 +17,9 @@ async function getActiveBusinessAds(databasePool) {
     WHERE registration_status = 'REGISTERED'
       AND plan_type IN ('PREMIUM', 'PLUS')
       AND (
-        (activated_until IS NOT NULL AND activated_until > NOW())
+        (activated_until IS NOT NULL AND activated_until > UTC_TIMESTAMP())
         OR
-        (piece_activated_until IS NOT NULL AND piece_activated_until > NOW())
+        (piece_activated_until IS NOT NULL AND piece_activated_until > UTC_TIMESTAMP())
       )
     ORDER BY ${BUSINESS_ADS_ORDER}
   `);
