@@ -225,26 +225,20 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     }))
     : [{ label: '제휴업체 전체보기', url: links.partners }];
   const businessLinks = businesses.map(({
-    label, managerName, telegramId, managerContact, url,
+    label, telegramId, managerContact, url,
   }) => [
     `💎 <a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`,
-    (managerName || telegramId || managerContact)
-      ? `👤 담당 : ${[
-        managerName && escapeHtml(managerName),
-        telegramId ? `@${escapeHtml(telegramId)}` : managerContact && escapeHtml(managerContact),
-      ].filter(Boolean).join(' ')}`
-      : '',
-  ].filter(Boolean).join('\n'));
+    telegramId ? `@${escapeHtml(telegramId)}` : managerContact && escapeHtml(managerContact),
+  ].filter(Boolean).join(' '));
+
+  const separator = '➖'.repeat(13);
 
   return [
-    '🤝 미드나잇맨즈 제휴 안내',
+    separator,
+    '<b>🤝 미드나잇맨즈 유흥 제휴 리스트</b>',
+    separator,
     '',
-    '💡 방문 전 담당자에게 「미드나잇맨즈 보고 연락드렸어요」',
-    '라고 말씀해주시면 더욱 빠른 안내가 가능합니다.',
-    '',
-    businessLinks.join('\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n'),
-    '',
-    '🔎 업체명을 누르면 상세정보 및 최신 안내를 확인할 수 있습니다.',
+    businessLinks.join('\n'),
   ].join('\n');
 }
 

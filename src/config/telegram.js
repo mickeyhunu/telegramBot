@@ -32,6 +32,8 @@ function readTelegramConfig(env = process.env) {
     partnersMessageId: Number.isSafeInteger(partnersMessageId) && partnersMessageId > 0
       ? partnersMessageId
       : null,
+    partnersPhotoPath: env.TELEGRAM_PARTNERS_PHOTO_PATH
+      || path.resolve(__dirname, '../../assets/group-welcome.png'),
     partnersUpdateIntervalMs: Number.isFinite(partnersUpdateMinutes) && partnersUpdateMinutes > 0
       ? partnersUpdateMinutes * 60_000
       : 5 * 60_000,

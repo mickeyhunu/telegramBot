@@ -1,7 +1,14 @@
+const { webcrypto } = require('node:crypto');
+
+if (typeof globalThis.crypto?.getRandomValues !== 'function') {
+  globalThis.crypto = webcrypto;
+}
+
+const { fromPath } = require('node-telegram-bot-api/node');
 const { getActiveBusinessAds } = require('./businessAds');
 const { partnersGuideMessage } = require('../ui/messages');
 
-const TELEGRAM_TEXT_LIMIT = 4096;
+const TELEGRAM_CAPTION_LIMIT = 1024;
 
 function createTelegramMessageUrl(chatId, messageId) {
   const internalChatId = String(chatId).replace(/^-100/, '');
@@ -12,7 +19,7 @@ function formatPartnersChannelMessage(businesses, links) {
   let visibleCount = businesses.length;
   let text = partnersGuideMessage(businesses, links);
 
-  while (text.length > TELEGRAM_TEXT_LIMIT && visibleCount > 0) {
+  while (text.length > TELEGRAM_CAPTION_LIMIT && visibleCount > 0) {
     visibleCount -= 1;
     const omitted = businesses.length - visibleCount;
     const notice = `\n\n📋 나머지 ${omitted}개 업체는 <a href="${links.partners}">전체 목록</a>에서 확인해 주세요.`;
@@ -25,6 +32,7 @@ function formatPartnersChannelMessage(businesses, links) {
 function startPartnersMessageUpdater(api, databasePool, config, { logger = console } = {}) {
   const chatId = config.partnersChannelId;
   const messageId = config.partnersMessageId;
+  const photoPath = config.partnersPhotoPath;
   const intervalMs = config.partnersUpdateIntervalMs;
 
   if (!messageId) {
@@ -42,12 +50,15 @@ function startPartnersMessageUpdater(api, databasePool, config, { logger = conso
     try {
       const businesses = await getActiveBusinessAds(databasePool);
       const text = formatPartnersChannelMessage(businesses, config.links);
-      await api.editMessageText({
+      await api.editMessageMedia({
         chat_id: chatId,
         message_id: messageId,
-        text,
-        parse_mode: 'HTML',
-        link_preview_options: { is_disabled: true },
+        media: {
+          type: 'photo',
+          media: await fromPath(photoPath),
+          caption: text,
+          parse_mode: 'HTML',
+        },
       });
       logger.info(`[partners-message] 수정 완료: ${chatId}/${messageId}, 업체 ${businesses.length}개`);
     } catch (error) {
