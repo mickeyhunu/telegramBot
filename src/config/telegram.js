@@ -1,21 +1,35 @@
 const path = require('node:path');
 
-const WEBSITE_URL = 'https://nightmens.com/';
-const ANNOUNCEMENT_URL = 'https://t.me/+1hcSUQN8lNswZTM1';
-const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
 const DEFAULT_PARTNERS_CHANNEL_ID = '-1004488893219';
 
 const DEFAULT_LINKS = Object.freeze({
-  website: WEBSITE_URL,
-  rbti: 'https://nightmens.com/play/rbti',
-  wiki: 'https://nightmens.com/play/wiki',
-  partners: 'https://nightmens.com/business-info',
-  support: 'https://t.me/mnmens_official',
+  website: '',
+  rbti: '',
+  wiki: '',
+  partners: '',
+  support: '',
+  partnersMessage: '',
 });
+
+function appendUrlPath(baseUrl, path) {
+  return baseUrl ? `${baseUrl.replace(/\/$/, '')}/${path}` : '';
+}
+
+function createTelegramMessageUrl(chatId, messageId) {
+  if (!chatId || !messageId) return '';
+  const internalChatId = String(chatId).replace(/^-100/, '');
+  return `https://t.me/c/${internalChatId}/${messageId}`;
+}
 
 function readTelegramConfig(env = process.env) {
   const partnersMessageId = Number.parseInt(env.TELEGRAM_PARTNERS_MESSAGE_ID, 10);
   const partnersUpdateMinutes = Number(env.TELEGRAM_PARTNERS_UPDATE_MINUTES || 5);
+  const website = env.WEBSITE_URL?.trim() || '';
+  const partnersChannelId = env.TELEGRAM_PARTNERS_CHANNEL_ID?.trim()
+    || DEFAULT_PARTNERS_CHANNEL_ID;
+  const validPartnersMessageId = Number.isSafeInteger(partnersMessageId) && partnersMessageId > 0
+    ? partnersMessageId
+    : null;
 
   return {
     welcomeChatId: env.TELEGRAM_COMMUNITY_CHAT_ID?.trim() || '',
@@ -27,26 +41,24 @@ function readTelegramConfig(env = process.env) {
       || path.resolve(__dirname, '../../data/bot-usage.json'),
     adsConfigPath: env.TELEGRAM_ADS_CONFIG_PATH
       || path.resolve(__dirname, '../../data/ads.json'),
-    partnersChannelId: env.TELEGRAM_PARTNERS_CHANNEL_ID?.trim()
-      || DEFAULT_PARTNERS_CHANNEL_ID,
-    partnersMessageId: Number.isSafeInteger(partnersMessageId) && partnersMessageId > 0
-      ? partnersMessageId
-      : null,
+    partnersChannelId,
+    partnersMessageId: validPartnersMessageId,
     partnersPhotoPath: env.TELEGRAM_PARTNERS_PHOTO_PATH
       || path.resolve(__dirname, '../../assets/group-welcome.png'),
     partnersUpdateIntervalMs: Number.isFinite(partnersUpdateMinutes) && partnersUpdateMinutes > 0
       ? partnersUpdateMinutes * 60_000
       : 5 * 60_000,
     subscriptionChats: [
-      { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
-      { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
+      { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: env.ANNOUNCEMENT_URL?.trim() || '' },
+      { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: env.COMMUNITY_URL?.trim() || '' },
     ],
     links: {
-      website: env.WEBSITE_URL || DEFAULT_LINKS.website,
-      rbti: env.RBTI_URL || DEFAULT_LINKS.rbti,
-      wiki: env.WIKI_URL || DEFAULT_LINKS.wiki,
-      partners: env.PARTNERS_URL || DEFAULT_LINKS.partners,
-      support: env.SUPPORT_URL || DEFAULT_LINKS.support,
+      website,
+      rbti: env.RBTI_URL?.trim() || appendUrlPath(website, 'play/rbti'),
+      wiki: env.WIKI_URL?.trim() || appendUrlPath(website, 'play/wiki'),
+      partners: env.PARTNERS_URL?.trim() || appendUrlPath(website, 'business-info'),
+      support: env.SUPPORT_URL?.trim() || '',
+      partnersMessage: createTelegramMessageUrl(partnersChannelId, validPartnersMessageId),
     },
   };
 }
@@ -54,6 +66,6 @@ function readTelegramConfig(env = process.env) {
 module.exports = {
   DEFAULT_PARTNERS_CHANNEL_ID,
   DEFAULT_LINKS,
-  WEBSITE_URL,
+  createTelegramMessageUrl,
   readTelegramConfig,
 };

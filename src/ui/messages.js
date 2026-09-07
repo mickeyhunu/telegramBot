@@ -142,7 +142,7 @@ function entryInformationMessage(store, entries) {
   ].join('\n');
 }
 
-function liveInformationMessage(store, action, information) {
+function liveInformationMessage(store, action, information, links = {}) {
   const headers = {
     choice: '💬 초이스톡',
     search: '🔎 초중',
@@ -160,7 +160,7 @@ function liveInformationMessage(store, action, information) {
       '출근자 정보 프리미엄 기능은 ',
       '미드나잇 맨즈 회원에게만 제공됩니다.',
       '',
-      '<a href="https://nightmens.com/login">[미드나잇맨즈 바로가기]</a>',
+      `<a href="${escapeHtml(`${links.website?.replace(/\/$/, '')}/login`)}">[미드나잇맨즈 바로가기]</a>`,
     ].join('\n');
   } else if (action === 'search') {
     details = information.length
@@ -239,12 +239,12 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     '',
     businessLinks.join('\n'),
     '',
-    '<a href="https://t.me/mnmens_official">💬[문의하기]</a>',
+    `<a href="${escapeHtml(links.support)}">💬[문의하기]</a>`,
     '<a href="https://t.me/mnmens_bot">🤖[AI 유흥 실시간정보 보러가기]</a>',
   ].join('\n');
 }
 
-function partnershipListMessage() {
+function partnershipListMessage(links = {}) {
   const separator = '➖'.repeat(12);
 
   return [
@@ -252,11 +252,11 @@ function partnershipListMessage() {
     '<b>🤝 미드나잇맨즈 제휴 리스트</b>',
     separator,
     '',
-    '💎<a href="https://t.me/c/4403977899/11"><b>유흥 제휴 리스트</b></a>',
+    `💎<a href="${escapeHtml(links.partnersMessage)}"><b>유흥 제휴 리스트</b></a>`,
     '',
     //'💎<a href="https://t.me/c/1063767278/9659"><b>업자 제휴 리스트</b></a>',
     '',
-    '<a href="https://t.me/mnmens_official">💬[문의하기]</a>',
+    `<a href="${escapeHtml(links.support)}">💬[문의하기]</a>`,
   ].join('\n');
 }
 

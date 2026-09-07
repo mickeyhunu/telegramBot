@@ -10,10 +10,7 @@ const { partnersGuideMessage } = require('../ui/messages');
 
 const TELEGRAM_CAPTION_LIMIT = 1024;
 
-function createTelegramMessageUrl(chatId, messageId) {
-  const internalChatId = String(chatId).replace(/^-100/, '');
-  return `https://t.me/c/${internalChatId}/${messageId}`;
-}
+const { createTelegramMessageUrl } = require('../config/telegram');
 
 function formatPartnersChannelMessage(businesses, links) {
   let visibleCount = businesses.length;
