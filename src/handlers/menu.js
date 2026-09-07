@@ -24,9 +24,15 @@ const { getLiveInformation } = require('../services/liveInformation');
 
 const TELEGRAM_DELETE_BATCH_SIZE = 100;
 const UNDELETABLE_MESSAGE_ERROR = /message (?:can(?:not|'t) be deleted(?: for everyone)?|to delete not found)/i;
+const MESSAGE_NOT_MODIFIED_ERROR = /message is not modified/i;
 
 function isUndeletableMessageError(error) {
   return UNDELETABLE_MESSAGE_ERROR.test(error?.description || error?.message || String(error));
+}
+
+function isMessageNotModifiedError(error) {
+  return error?.errorCode === 400
+    && MESSAGE_NOT_MODIFIED_ERROR.test(error?.description || error?.message || String(error));
 }
 
 async function deleteMessagesBestEffort(ctx, messageIds, logger) {
@@ -70,13 +76,20 @@ async function sendPrivateMenu(ctx, config) {
 
 async function editPrivateMenu(ctx, text, replyMarkup, options = {}) {
   await ctx.answerCallbackQuery();
-  await ctx.api.editMessageText({
-    chat_id: ctx.chatId,
-    message_id: ctx.callbackQuery.message.message_id,
-    text,
-    reply_markup: replyMarkup,
-    ...options,
-  });
+  try {
+    await ctx.api.editMessageText({
+      chat_id: ctx.chatId,
+      message_id: ctx.callbackQuery.message.message_id,
+      text,
+      reply_markup: replyMarkup,
+      ...options,
+    });
+  } catch (error) {
+    // Repeated button presses can race and attempt to apply the same menu twice.
+    // Telegram treats that harmless no-op as a 400 response, so do not let it
+    // fail the callback handler or trigger a second callback-query response.
+    if (!isMessageNotModifiedError(error)) throw error;
+  }
 }
 
 async function sendSubscriptionGate(ctx, config) {
