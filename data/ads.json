@@ -1,0 +1,24 @@
+{
+  "ads": [
+    {
+      "name": "제휴업체 순차 홍보",
+      "enabled": true,
+      "source": "business_ads",
+      "groups": ["-1004488893219"],
+      "startTime": "2026-09-07T00:00:00+09:00",
+      "repeatMinutes": 30,
+      "disableNotification": false
+    },
+    {
+      "name": "매시간 정기 홍보",
+      "enabled": false,
+      "groups": ["-1004488893219", "-"],
+      "message": "<b>미드나잇맨즈 정기 안내</b>\n\n홍보 문구를 여기에 입력하세요.",
+      "photo": "../assets/ads/poster1.png",
+      "startTime": "2026-09-07T00:00:00+09:00",
+      "repeatMinutes": 30,
+      "parseMode": "HTML",
+      "disableNotification": false
+    }
+  ]
+}
