@@ -7,6 +7,7 @@ if (typeof globalThis.crypto?.getRandomValues !== 'function') {
 }
 
 const { fromPath } = require('node-telegram-bot-api/node');
+const { ACTIVE_BUSINESS_ADS_WHERE } = require('./businessAds');
 
 const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
@@ -43,13 +44,7 @@ async function readActiveBusinessAds(pool) {
   const [rows] = await pool.execute(
     `SELECT id, title, image_url, manager_contact, kakao_talk_id, telegram_id
        FROM business_ads
-      WHERE registration_status = 'REGISTERED'
-        AND plan_type IN ('PREMIUM', 'PLUS')
-        AND (
-          (activated_until IS NOT NULL AND activated_until > NOW())
-          OR
-          (piece_activated_until IS NOT NULL AND piece_activated_until > NOW())
-        )
+      WHERE ${ACTIVE_BUSINESS_ADS_WHERE}
       ORDER BY id ASC`,
   );
   return rows;
