@@ -1,3 +1,4 @@
 .env
 node_modules/
 data/group-members.json
+data/bot-usage.json

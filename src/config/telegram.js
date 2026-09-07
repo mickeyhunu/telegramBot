@@ -19,6 +19,8 @@ function readTelegramConfig(env = process.env) {
       || path.resolve(__dirname, '../../assets/group-welcome.png'),
     groupMemberStorePath: env.TELEGRAM_MEMBER_STORE_PATH
       || path.resolve(__dirname, '../../data/group-members.json'),
+    botUsageStorePath: env.TELEGRAM_BOT_USAGE_STORE_PATH
+      || path.resolve(__dirname, '../../data/bot-usage.json'),
     adsConfigPath: env.TELEGRAM_ADS_CONFIG_PATH
       || path.resolve(__dirname, '../../data/ads.json'),
     subscriptionChats: [

@@ -5,9 +5,11 @@ const { registerGroupWelcomeHandler } = require('./handlers/groupWelcome');
 const { registerGroupModerationHandler } = require('./handlers/groupModeration');
 const { registerGroupSpamHandler } = require('./handlers/groupSpam');
 const { registerTextEffectsHandler } = require('./handlers/textEffects');
+const { registerChatEntryLogger } = require('./handlers/chatEntryLogger');
 const { createSubscriptionGuard } = require('./services/subscriptions');
 const { createDatabasePools } = require('./services/database');
 const { createGroupMemberStore } = require('./services/groupMembers');
+const { createBotUsageStore } = require('./services/botUsage');
 const { startAdScheduler } = require('./services/adScheduler');
 
 function createBot(token, { databasePools, env = process.env } = {}) {
@@ -16,13 +18,17 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   const config = readTelegramConfig(env);
   const bot = new Bot(token);
   const groupMemberStore = createGroupMemberStore(config.groupMemberStorePath);
+  const usageStore = createBotUsageStore(config.botUsageStorePath);
   const requireSubscriptions = createSubscriptionGuard({
     config,
     onRejected: (ctx) => sendSubscriptionGate(ctx, config),
   });
 
+  registerChatEntryLogger(bot, { usageStore });
+
   registerMenuHandlers(bot, {
     config,
+    usageStore,
     requireSubscriptions,
     businessAdsPool: pools.mnms,
     chatbotPool: pools.chatbot,
