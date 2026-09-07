@@ -22,6 +22,29 @@ function normalizeTelegramId(value) {
   return String(value ?? '').trim().replace(/^@+/, '');
 }
 
+function normalizeInlineKeyboard(value, label) {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`${label}.inlineKeyboard는 한 개 이상의 버튼 행이 필요합니다.`);
+  }
+
+  return value.map((row, rowIndex) => {
+    if (!Array.isArray(row) || row.length === 0) {
+      throw new Error(`${label}.inlineKeyboard[${rowIndex}]는 한 개 이상의 버튼이 필요합니다.`);
+    }
+    return row.map((button, buttonIndex) => {
+      const buttonLabel = `${label}.inlineKeyboard[${rowIndex}][${buttonIndex}]`;
+      if (!button || typeof button.text !== 'string' || !button.text.trim()) {
+        throw new Error(`${buttonLabel}.text가 필요합니다.`);
+      }
+      if (typeof button.url !== 'string' || !/^(?:https?:\/\/|tg:\/\/)/i.test(button.url)) {
+        throw new Error(`${buttonLabel}.url은 http(s) 또는 tg 링크여야 합니다.`);
+      }
+      return { text: button.text.trim(), url: button.url.trim() };
+    });
+  });
+}
+
 function formatBusinessAd(row) {
   const lines = [
     `<b>⭐️ ${escapeHtml(row.title)} ⭐️</b>`,

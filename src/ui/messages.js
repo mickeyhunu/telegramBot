@@ -238,6 +238,8 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     separator,
     '',
     businessLinks.join('\n'),
+    '',
+    '<a href="https://t.me/mnmens_bot">🤖[AI 유흥 실시간정보 보러가기]</a>',
   ].join('\n');
 }
 
