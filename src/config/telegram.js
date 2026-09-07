@@ -3,6 +3,7 @@ const path = require('node:path');
 const WEBSITE_URL = 'https://nightmens.com/';
 const ANNOUNCEMENT_URL = 'https://t.me/+1hcSUQN8lNswZTM1';
 const COMMUNITY_URL = 'https://t.me/+_mzPGLwIEBIyMjll';
+const DEFAULT_PARTNERS_CHANNEL_ID = '-1004488893219';
 
 const DEFAULT_LINKS = Object.freeze({
   website: WEBSITE_URL,
@@ -13,6 +14,9 @@ const DEFAULT_LINKS = Object.freeze({
 });
 
 function readTelegramConfig(env = process.env) {
+  const partnersMessageId = Number.parseInt(env.TELEGRAM_PARTNERS_MESSAGE_ID, 10);
+  const partnersUpdateMinutes = Number(env.TELEGRAM_PARTNERS_UPDATE_MINUTES || 5);
+
   return {
     welcomeChatId: env.TELEGRAM_COMMUNITY_CHAT_ID?.trim() || '',
     welcomePhotoPath: env.TELEGRAM_WELCOME_PHOTO_PATH
@@ -23,6 +27,14 @@ function readTelegramConfig(env = process.env) {
       || path.resolve(__dirname, '../../data/bot-usage.json'),
     adsConfigPath: env.TELEGRAM_ADS_CONFIG_PATH
       || path.resolve(__dirname, '../../data/ads.json'),
+    partnersChannelId: env.TELEGRAM_PARTNERS_CHANNEL_ID?.trim()
+      || DEFAULT_PARTNERS_CHANNEL_ID,
+    partnersMessageId: Number.isSafeInteger(partnersMessageId) && partnersMessageId > 0
+      ? partnersMessageId
+      : null,
+    partnersUpdateIntervalMs: Number.isFinite(partnersUpdateMinutes) && partnersUpdateMinutes > 0
+      ? partnersUpdateMinutes * 60_000
+      : 5 * 60_000,
     subscriptionChats: [
       { name: '📢 미드나잇맨즈 공지방', chatId: env.TELEGRAM_ANNOUNCEMENT_CHAT_ID || '', url: ANNOUNCEMENT_URL },
       { name: '💬 미드나잇맨즈 소통방', chatId: env.TELEGRAM_COMMUNITY_CHAT_ID || '', url: COMMUNITY_URL },
@@ -38,6 +50,7 @@ function readTelegramConfig(env = process.env) {
 }
 
 module.exports = {
+  DEFAULT_PARTNERS_CHANNEL_ID,
   DEFAULT_LINKS,
   WEBSITE_URL,
   readTelegramConfig,

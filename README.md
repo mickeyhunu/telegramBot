@@ -28,6 +28,11 @@
 - `TELEGRAM_BOT_USAGE_STORE_PATH`: 봇이 추가된 채팅과 개인 `/start` 사용자 정보 JSON
   저장 경로(선택 사항, 기본값 `data/bot-usage.json`)
 - `TELEGRAM_ADS_CONFIG_PATH`: 반복 광고 JSON 경로(선택 사항, 기본값 `data/ads.json`)
+- `TELEGRAM_PARTNERS_CHANNEL_ID`: 제휴업체 목록 메시지가 있는 채널 ID(선택 사항,
+  기본값 `-1004488893219`)
+- `TELEGRAM_PARTNERS_MESSAGE_ID`: 주기적으로 수정할 제휴업체 목록 메시지 ID. 비워 두면
+  자동 수정 기능을 사용하지 않습니다.
+- `TELEGRAM_PARTNERS_UPDATE_MINUTES`: 제휴업체 목록 갱신 간격(분, 기본값 `5`)
 - `MNMS_MYSQL_*`: 개인 메뉴의 제휴업체 정보를 조회할 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: 개인 메뉴의 LIVE 정보를 조회할 데이터베이스 접속 정보
 - `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`:
@@ -37,6 +42,20 @@
 npm install
 npm start
 ```
+
+## 채널 제휴업체 목록 자동 갱신
+
+봇을 대상 채널의 관리자로 추가하고 메시지 게시 및 수정 권한을 부여한 다음, 채널에 봇으로
+기본 메시지를 하나 게시합니다. 그 메시지에 답장하여 `/msgidd`로 확인한 숫자를
+`TELEGRAM_PARTNERS_MESSAGE_ID`에 설정하고 봇을 재시작하면 됩니다. 봇은 시작 직후와 이후
+설정된 간격마다 활성 제휴업체를 DB에서 다시 조회하여 **같은 메시지**를 수정합니다.
+
+기본 채널에서는 다른 메시지의 링크 버튼이나 본문에
+`https://t.me/c/4488893219/<메시지 ID>` 형식의 주소를 사용하면 항상 갱신되는 해당 메시지로
+이동할 수 있습니다. 실제 링크는 봇 시작 시 `[partners-message] 자동 수정 시작` 로그에도
+출력됩니다. 목록이 Telegram 메시지 최대 길이를 넘으면 들어가는 업체까지만 표시하고 전체
+목록 링크를 덧붙입니다. 메시지가 삭제되었거나 봇에 수정 권한이 없으면 실패 원인이 로그에
+기록되고 다음 주기에 다시 시도합니다.
 
 ## 그룹 반복 광고
 

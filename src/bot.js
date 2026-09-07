@@ -12,6 +12,7 @@ const { createDatabasePools } = require('./services/database');
 const { createGroupMemberStore } = require('./services/groupMembers');
 const { createBotUsageStore } = require('./services/botUsage');
 const { startAdScheduler } = require('./services/adScheduler');
+const { startPartnersMessageUpdater } = require('./services/partnersMessageUpdater');
 
 function createBot(token, { databasePools, env = process.env } = {}) {
   if (!token) throw new Error('BOT_TOKEN 환경 변수가 필요합니다.');
@@ -52,6 +53,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath, {
     businessAdsPool: pools.mnms,
   });
+  bot.partnersMessageUpdater = startPartnersMessageUpdater(bot.api, pools.mnms, config);
   bot.catch((error) => console.error('Telegram bot handler failed:', error));
   return bot;
 }
