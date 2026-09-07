@@ -105,6 +105,7 @@ function createBusinessAdsSender(api, pool, groups, options = {}) {
       photo: String(row.image_url || '').trim() || null,
       parseMode: 'HTML',
       disableNotification: options.disableNotification === true,
+      inlineKeyboard: options.inlineKeyboard,
     };
     await sendAd(api, ad, logger);
     lastAdId = row.id;
@@ -153,6 +154,7 @@ function normalizeAd(ad, index, configDirectory) {
     photo,
     parseMode: ad.parseMode || undefined,
     disableNotification: ad.disableNotification === true,
+    inlineKeyboard: normalizeInlineKeyboard(ad.inlineKeyboard, label),
     source,
     startAt,
     intervalMs: repeatMinutes * 60_000,
@@ -171,6 +173,9 @@ async function sendAd(api, ad, logger = console) {
         chat_id: chatId,
         parse_mode: ad.parseMode,
         disable_notification: ad.disableNotification,
+        reply_markup: ad.inlineKeyboard
+          ? { inline_keyboard: ad.inlineKeyboard }
+          : undefined,
       };
       if (ad.photo) {
         const photo = /^https?:\/\//i.test(ad.photo) ? ad.photo : await fromPath(ad.photo);
@@ -239,6 +244,7 @@ function startAdScheduler(api, configPath, { logger = console, now, businessAdsP
         ? createBusinessAdsSender(api, businessAdsPool, ad.groups, {
           logger,
           disableNotification: ad.disableNotification,
+          inlineKeyboard: ad.inlineKeyboard,
         })
         : undefined;
       stops.push(scheduleAd(api, ad, { logger, now, send }));

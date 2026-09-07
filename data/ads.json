@@ -7,7 +7,12 @@
       "groups": ["-1004488893219"],
       "startTime": "2026-09-07T00:00:00+09:00",
       "repeatMinutes": 30,
-      "disableNotification": false
+      "disableNotification": false,
+      "inlineKeyboard": [
+        [
+          { "text": "문의하기", "url": "https://t.me/mnmens_offical" }
+        ]
+      ]
     },
     {
       "name": "매시간 정기 홍보",
@@ -16,24 +21,23 @@
       "message": "<b>미드나잇맨즈 정기 안내</b>\n\n홍보 문구를 여기에 입력하세요.",
       "photo": "../assets/ads/poster1.png",
       "startTime": "2026-09-07T00:00:00+09:00",
-      "repeatMinutes": 30,
+      "repeatMinutes": 15,
       "parseMode": "HTML",
       "disableNotification": false
     },
-        {
+    {
       "name": "유흥 소통 커뮤니티 홍보",
       "enabled": true,
-      "groups": ["-1004488893219"],
-      "message": "<b>⭐️ 유흥 소통 커뮤니티! ⭐️</b>\n\n⚱️룸돌이 형들 환영합니다!\n\n👩‍❤️‍👨강남 쩜오.하퍼 최저가 제휴업소\n최신소식 공유\n\n<a href=\"https://t.me/mnmens_bot\">🤖[AI 유흥 실시간정보 보러가기]</a>",
+      "groups": ["-1002461380738"],
+      "message": "<b>⭐️ 유흥 소통 커뮤니티! ⭐️</b>\n\n<a href=\"https://t.me/+_mzPGLwIEBIyMjll\">🌙 [미드나잇맨즈 소통방]</a>\n\n⚱️룸돌이 형들 환영합니다!\n\n👩‍❤️‍👨강남 쩜오.하퍼 최저가 제휴업소\n최신소식 공유\n\n<a href=\"https://t.me/mnmens_bot\">🤖[AI 유흥 실시간정보 보러가기]</a>",
       "photo": "../assets/ads/poster1.png",
       "startTime": "2026-09-07T00:00:00+09:00",
-      "repeatMinutes": 1,
+      "repeatMinutes": 30,
       "parseMode": "HTML",
       "disableNotification": false,
       "inlineKeyboard": [
         [
-          { "text": "🤖 가게별 상황 봇", "url": "https://t.me/mnmens_bot" },
-          { "text": "💬 소통방 바로가기", "url": "https://t.me/c/4488893219/1" }
+          { "text": "문의하기", "url": "https://t.me/mnmens_offical" }
         ]
       ]
     }
