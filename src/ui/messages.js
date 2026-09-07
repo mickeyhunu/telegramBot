@@ -243,6 +243,20 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
   ].join('\n');
 }
 
+function partnershipListMessage() {
+  const separator = '➖'.repeat(12);
+
+  return [
+    separator,
+    '<b>🤝 미드나잇맨즈 제휴 리스트</b>',
+    separator,
+    '',
+    '💎<a href="https://t.me/c/4403977899/11"><b>유흥 제휴 리스트</b></a>',
+    '',
+    '💎<a href="https://t.me/c/1063767278/9659"><b>업자 제휴 리스트</b></a>',
+  ].join('\n');
+}
+
 function subscriptionMessage() {
   return [
     '📢 **구독자 전용 서비스입니다.**',
@@ -261,6 +275,7 @@ module.exports = {
   formatPartnerBusinessName,
   liveGuideMessage,
   liveInformationMessage,
+  partnershipListMessage,
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,

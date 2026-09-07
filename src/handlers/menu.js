@@ -8,6 +8,7 @@ const {
 const {
   liveGuideMessage,
   liveInformationMessage,
+  partnershipListMessage,
   partnersGuideMessage,
   privateGuideMessage,
   subscriptionMessage,
@@ -167,6 +168,10 @@ function registerMenuHandlers(bot, {
     await clearRecentPrivateMessages(ctx);
     return startSubscriptionFlow(ctx, config);
   });
+  bot.command('제휴', (ctx) => ctx.reply(partnershipListMessage(), {
+    parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
+  }));
   bot.on('callback_query', (ctx, next) => {
     if (ctx.chat?.type !== 'private') return next();
     const match = /^live_(choice|search|waiting|entry|workers):(\d+)$/.exec(ctx.callbackQuery?.data || '');
