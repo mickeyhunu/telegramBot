@@ -200,9 +200,16 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
-function formatPartnerBusinessName({ district, business_name: businessName }) {
+function formatPartnerBusinessName({
+  district,
+  business_name: businessName,
+  manager_name: managerName,
+}) {
   const shortDistrict = String(district || '').trim().replace(/구$/, '');
-  const bracketContents = [shortDistrict, businessName].filter(Boolean).join(' ');
+  const bracketContents = [shortDistrict, businessName, managerName]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' ');
   return bracketContents ? `[${bracketContents}]` : '';
 }
 
@@ -217,8 +224,7 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
       url,
       ...business
     }) => ({
-      label: formatPartnerBusinessName(business),
-      managerName: String(managerName || '').trim(),
+      label: formatPartnerBusinessName({ ...business, manager_name: managerName }),
       telegramId: String(telegramId || '').trim().replace(/^@+/, ''),
       managerContact: String(managerContact || '').trim(),
       url: url || `${baseUrl}/${encodeURIComponent(id)}`,
