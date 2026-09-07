@@ -23,6 +23,30 @@ const { getStore, getStores } = require('../services/stores');
 const { getLiveInformation } = require('../services/liveInformation');
 
 const TELEGRAM_DELETE_BATCH_SIZE = 100;
+const UNDELETABLE_MESSAGE_ERROR = /message (?:can(?:not|'t) be deleted(?: for everyone)?|to delete not found)/i;
+
+function isUndeletableMessageError(error) {
+  return UNDELETABLE_MESSAGE_ERROR.test(error?.description || error?.message || String(error));
+}
+
+async function deleteMessagesBestEffort(ctx, messageIds, logger) {
+  try {
+    await ctx.api.deleteMessages({ chat_id: ctx.chatId, message_ids: messageIds });
+  } catch (error) {
+    if (!isUndeletableMessageError(error)) {
+      logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${error.message || error}`);
+      return;
+    }
+
+    // deleteMessages fails the whole request when just one ID cannot be removed.
+    // Split the batch to retain all deletable messages while silently skipping
+    // old, already removed, or otherwise protected messages.
+    if (messageIds.length <= 1) return;
+    const middle = Math.ceil(messageIds.length / 2);
+    await deleteMessagesBestEffort(ctx, messageIds.slice(0, middle), logger);
+    await deleteMessagesBestEffort(ctx, messageIds.slice(middle), logger);
+  }
+}
 
 async function clearRecentPrivateMessages(ctx, logger = console) {
   const latestMessageId = ctx.message?.message_id;
@@ -37,13 +61,7 @@ async function clearRecentPrivateMessages(ctx, logger = console) {
 
   if (!messageIds.length) return;
 
-  try {
-    await ctx.api.deleteMessages({ chat_id: ctx.chatId, message_ids: messageIds });
-  } catch (error) {
-    // Telegram does not allow every message to be deleted (for example, messages
-    // that are too old). A cleanup failure must not prevent /start from working.
-    logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${error.message}`);
-  }
+  await deleteMessagesBestEffort(ctx, messageIds, logger);
 }
 
 async function sendPrivateMenu(ctx, config) {
