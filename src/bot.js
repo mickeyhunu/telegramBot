@@ -39,6 +39,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
     chatId: config.welcomeChatId,
     photoPath: config.welcomePhotoPath,
     memberStore: groupMemberStore,
+    links: config.links,
   });
   registerGroupModerationHandler(bot, {
     chatId: config.welcomeChatId,
@@ -52,6 +53,7 @@ function createBot(token, { databasePools, env = process.env } = {}) {
   registerIdentifierHandlers(bot);
   bot.adScheduler = startAdScheduler(bot.api, config.adsConfigPath, {
     businessAdsPool: pools.mnms,
+    partnersMessageUrl: config.links.partnersMessage,
   });
   bot.partnersMessageUpdater = startPartnersMessageUpdater(bot.api, pools.mnms, config);
   bot.catch((error) => console.error('Telegram bot handler failed:', error));

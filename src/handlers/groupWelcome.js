@@ -50,7 +50,7 @@ function joinedAtParts(unixTimestamp) {
   };
 }
 
-function welcomeCaption(member, unixTimestamp) {
+function welcomeCaption(member, unixTimestamp, links = {}) {
   const { date, time } = joinedAtParts(unixTimestamp);
   const username = member.username ? `@${escapeHtml(member.username)}` : '없음';
 
@@ -74,7 +74,7 @@ function welcomeCaption(member, unixTimestamp) {
     '<b>영구제제입니다</b>',
     '',
     '<a href="https://t.me/mnmens_bot"><b>[ 미드나잇맨즈봇 사용하기 ]</b></a>',
-    '<a href="https://nightmens.com/"><b>[ 미드나잇맨즈 바로가기 ]</b></a>',
+    `<a href="${escapeHtml(links.website)}"><b>[ 미드나잇맨즈 바로가기 ]</b></a>`,
   ].join('\n');
 }
 
@@ -97,6 +97,7 @@ function registerGroupWelcomeHandler(bot, {
   chatId,
   photoPath,
   memberStore,
+  links,
   logger = console,
 }) {
   const recentlyWelcomed = new Map();
@@ -130,7 +131,7 @@ function registerGroupWelcomeHandler(bot, {
       }
     }, WELCOME_DEDUPLICATION_MS);
     expiration.unref?.();
-    const caption = welcomeCaption(member, unixTimestamp);
+    const caption = welcomeCaption(member, unixTimestamp, links);
 
     try {
       await ctx.api.sendPhoto({

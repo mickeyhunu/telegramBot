@@ -24,6 +24,8 @@
 - `BOT_TOKEN`: BotFather에서 발급받은 Telegram 봇 토큰
 - `TELEGRAM_ANNOUNCEMENT_CHAT_ID`: 미드나잇맨즈 공지방의 숫자 채팅 ID
 - `TELEGRAM_COMMUNITY_CHAT_ID`: 환영 메시지를 사용할 미드나잇맨즈 소통방의 숫자 채팅 ID
+- `ANNOUNCEMENT_URL`: 미드나잇맨즈 공지방 초대 URL
+- `COMMUNITY_URL`: 미드나잇맨즈 소통방 초대 URL
 - `TELEGRAM_WELCOME_PHOTO_PATH`: 그룹 환영 이미지 경로(선택 사항)
 - `TELEGRAM_MEMBER_STORE_PATH`: 그룹 회원 정보 JSON 저장 경로(선택 사항,
   기본값 `data/group-members.json`)
@@ -39,8 +41,9 @@
 - `TELEGRAM_PARTNERS_UPDATE_MINUTES`: 제휴업체 목록 갱신 간격(분, 기본값 `5`)
 - `MNMS_MYSQL_*`: 개인 메뉴의 제휴업체 정보를 조회할 데이터베이스 접속 정보
 - `CHATBOT_MYSQL_*`: 개인 메뉴의 LIVE 정보를 조회할 데이터베이스 접속 정보
-- `WEBSITE_URL`, `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`, `SUPPORT_URL`:
-  개인 메뉴 버튼의 이동 주소
+- `WEBSITE_URL`, `SUPPORT_URL`: 공통 웹사이트 및 문의 URL
+- `RBTI_URL`, `WIKI_URL`, `PARTNERS_URL`: 개인 메뉴 버튼의 이동 주소(선택 사항이며,
+  비워 두면 `WEBSITE_URL`을 기준으로 생성합니다.)
 
 ```bash
 npm install
@@ -57,8 +60,8 @@ npm start
 수정합니다. 기본 사진은 `assets/group-welcome.png`이며 다른 사진은
 `TELEGRAM_PARTNERS_PHOTO_PATH`로 지정할 수 있습니다.
 
-기본 채널에서는 다른 메시지의 링크 버튼이나 본문에
-`https://t.me/c/4488893219/<메시지 ID>` 형식의 주소를 사용하면 항상 갱신되는 해당 메시지로
+다른 메시지의 링크 버튼이나 본문에는 `TELEGRAM_PARTNERS_CHANNEL_ID`와
+`TELEGRAM_PARTNERS_MESSAGE_ID`로 생성한 주소를 사용하므로 항상 갱신되는 해당 메시지로
 이동할 수 있습니다. 실제 링크는 봇 시작 시 `[partners-message] 자동 수정 시작` 로그에도
 출력됩니다. 목록이 Telegram 메시지 최대 길이를 넘으면 들어가는 업체까지만 표시하고 전체
 목록 링크를 덧붙입니다. 사진 설명의 최대 길이는 1,024자입니다. 메시지가 삭제되었거나 봇에 수정 권한이 없으면 실패 원인이 로그에

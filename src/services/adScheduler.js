@@ -45,7 +45,7 @@ function normalizeInlineKeyboard(value, label) {
   });
 }
 
-function formatBusinessAd(row) {
+function formatBusinessAd(row, partnersMessageUrl = '') {
   const lines = [
     `<b>⭐️ ${escapeHtml(row.title)} ⭐️</b>`,
     '',
@@ -59,7 +59,9 @@ function formatBusinessAd(row) {
     const escapedId = escapeHtml(telegramId);
     lines.push(`<b>💎 텔레그램 :</b> <a href="https://t.me/${encodeURIComponent(telegramId)}"><b>@${escapedId}</b></a>`);
   }
-  lines.push(`\n<a href=\"https://t.me/c/4403977899/11\">🤝[전체 제휴업소 보러가기]</a>`);
+  if (partnersMessageUrl) {
+    lines.push(`\n<a href=\"${escapeHtml(partnersMessageUrl)}\">🤝[전체 제휴업소 보러가기]</a>`);
+  }
   return lines.join('\n');
 }
 
@@ -102,7 +104,7 @@ function createBusinessAdsSender(api, pool, groups, options = {}) {
     const ad = {
       name: `business_ads #${row.id}`,
       groups,
-      message: formatBusinessAd(row),
+      message: formatBusinessAd(row, options.partnersMessageUrl),
       photo: String(row.image_url || '').trim() || null,
       parseMode: 'HTML',
       disableNotification: options.disableNotification === true,
@@ -224,7 +226,12 @@ function scheduleAd(api, ad, { logger = console, now = Date.now, send = () => se
   };
 }
 
-function startAdScheduler(api, configPath, { logger = console, now, businessAdsPool } = {}) {
+function startAdScheduler(api, configPath, {
+  logger = console,
+  now,
+  businessAdsPool,
+  partnersMessageUrl,
+} = {}) {
   let config;
   try {
     config = readAdsConfig(configPath);
@@ -246,6 +253,7 @@ function startAdScheduler(api, configPath, { logger = console, now, businessAdsP
           logger,
           disableNotification: ad.disableNotification,
           inlineKeyboard: ad.inlineKeyboard,
+          partnersMessageUrl,
         })
         : undefined;
       stops.push(scheduleAd(api, ad, { logger, now, send }));

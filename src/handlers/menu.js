@@ -186,7 +186,7 @@ function registerMenuHandlers(bot, {
     await clearRecentPrivateMessages(ctx);
     return startSubscriptionFlow(ctx, config);
   });
-  bot.command('제휴', (ctx) => ctx.reply(partnershipListMessage(), {
+  bot.command('제휴', (ctx) => ctx.reply(partnershipListMessage(config.links), {
     parse_mode: 'HTML',
     link_preview_options: { is_disabled: true },
   }));
@@ -208,7 +208,7 @@ function registerMenuHandlers(bot, {
         const information = await loadLiveInformation(chatbotPool, action, store);
         return editPrivateMenu(
           ctx,
-          liveInformationMessage(store, action, information),
+          liveInformationMessage(store, action, information, config.links),
           buildLiveMenu(store.storeNo, config.links),
           action === 'workers'
             ? { parse_mode: 'HTML', link_preview_options: { is_disabled: true } }
