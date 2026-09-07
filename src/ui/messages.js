@@ -49,7 +49,7 @@ function formatChojoongCreatedAt(value) {
   return `${Number(month)}월 ${Number(day)}일 ${Number(hour)}시 ${Number(minute)}분`;
 }
 
-const LIVE_SECTION_DIVIDER = '➖➖➖➖➖➖➖➖➖➖➖➖➖➖';
+const LIVE_SECTION_DIVIDER = '➖➖➖➖➖➖➖➖➖➖➖➖';
 
 function formatElapsedTime(value, now = new Date()) {
   if (!value) return '';
@@ -237,7 +237,7 @@ function partnersGuideMessage(partnerBusinesses = [], links) {
     telegramId ? `@${escapeHtml(telegramId)}` : managerContact && escapeHtml(managerContact),
   ].filter(Boolean).join(' '));
 
-  const separator = '➖'.repeat(13);
+  const separator = '➖'.repeat(12);
 
   return [
     separator,
