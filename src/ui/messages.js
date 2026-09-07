@@ -206,7 +206,7 @@ function formatPartnerBusinessName({
   manager_name: managerName,
 }) {
   const shortDistrict = String(district || '').trim().replace(/구$/, '');
-  const bracketContents = [shortDistrict, businessName, managerName]
+  const bracketContents = [shortDistrict, businessName, "|", managerName]
     .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' ');
