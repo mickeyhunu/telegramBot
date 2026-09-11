@@ -30,6 +30,10 @@ function isUndeletableMessageError(error) {
   return UNDELETABLE_MESSAGE_ERROR.test(error?.description || error?.message || String(error));
 }
 
+function isTelegramBadRequest(error) {
+  return (error?.errorCode || error?.error_code || error?.statusCode || error?.status) === 400;
+}
+
 function isMessageNotModifiedError(error) {
   return error?.errorCode === 400
     && MESSAGE_NOT_MODIFIED_ERROR.test(error?.description || error?.message || String(error));
@@ -39,18 +43,23 @@ async function deleteMessagesBestEffort(ctx, messageIds, logger) {
   try {
     await ctx.api.deleteMessages({ chat_id: ctx.chatId, message_ids: messageIds });
   } catch (error) {
-    if (!isUndeletableMessageError(error)) {
-      logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${error.message || error}`);
+    // A single invalid ID can make Telegram reject the complete batch. Error
+    // descriptions differ between Bot API versions, so treat every 400 as an
+    // ID-specific batch failure and isolate it instead of abandoning the other
+    // deletable messages in that batch.
+    const canIsolateFailure = isTelegramBadRequest(error) || isUndeletableMessageError(error);
+    if (canIsolateFailure && messageIds.length > 1) {
+      const middle = Math.ceil(messageIds.length / 2);
+      await deleteMessagesBestEffort(ctx, messageIds.slice(0, middle), logger);
+      await deleteMessagesBestEffort(ctx, messageIds.slice(middle), logger);
       return;
     }
 
-    // deleteMessages fails the whole request when just one ID cannot be removed.
-    // Split the batch to retain all deletable messages while silently skipping
-    // old, already removed, or otherwise protected messages.
-    if (messageIds.length <= 1) return;
-    const middle = Math.ceil(messageIds.length / 2);
-    await deleteMessagesBestEffort(ctx, messageIds.slice(0, middle), logger);
-    await deleteMessagesBestEffort(ctx, messageIds.slice(middle), logger);
+    // Old, already removed, or protected singleton messages are expected and
+    // cannot prevent the remaining cleanup. Operational failures are logged.
+    if (!isUndeletableMessageError(error)) {
+      logger.warn(`개인 채팅 메시지 정리 실패 (${ctx.chatId}, 메시지 ${messageIds.join(',')}): ${error.message || error}`);
+    }
   }
 }
 
