@@ -37,7 +37,8 @@ function initialModeration() {
 class GroupMemberStore {
   constructor(filePath) {
     this.filePath = filePath;
-    this.pendingOperation = Promise.resolve();
+    this.pendingOperation = this.compactExistingStore();
+    this.pendingOperation.catch(() => {});
   }
 
   runExclusive(operation) {
@@ -62,11 +63,23 @@ class GroupMemberStore {
     return store;
   }
 
+  async compactExistingStore() {
+    try {
+      await fs.access(this.filePath);
+    } catch (error) {
+      if (error.code === 'ENOENT') return;
+      throw error;
+    }
+
+    const store = await this.readStore();
+    await this.writeStore(store);
+  }
+
   async writeStore(store) {
     const directory = path.dirname(this.filePath);
     const temporaryPath = `${this.filePath}.${process.pid}.tmp`;
     await fs.mkdir(directory, { recursive: true });
-    await fs.writeFile(temporaryPath, `${JSON.stringify(store, null, 2)}\n`, {
+    await fs.writeFile(temporaryPath, `${JSON.stringify(store)}\n`, {
       encoding: 'utf8',
       mode: 0o600,
     });
