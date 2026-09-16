@@ -27,6 +27,7 @@ function initialModeration() {
   return {
     warningCount: 0,
     warnings: [],
+    warningExempt: false,
     mutedUntil: null,
     bannedAt: null,
     kickedAt: null,
@@ -225,6 +226,7 @@ class GroupMemberStore {
   ) {
     const occurredAtIso = new Date(occurredAt * 1000).toISOString();
     return this.updateMember(chatId, user, (member) => {
+      if (member.moderation.warningExempt) return member;
       member.moderation.warningCount += 1;
       member.moderation.warnings.push({ reason, occurredAt: occurredAtIso, issuedBy });
       member.membership.lastUpdatedAt = occurredAtIso;
@@ -236,6 +238,13 @@ class GroupMemberStore {
     return this.updateMember(chatId, user, (member) => {
       member.moderation.warningCount = 0;
       member.moderation.warnings = [];
+      return member;
+    });
+  }
+
+  setWarningExempt(chatId, user, warningExempt = true) {
+    return this.updateMember(chatId, user, (member) => {
+      member.moderation.warningExempt = warningExempt;
       return member;
     });
   }

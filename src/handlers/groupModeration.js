@@ -1,4 +1,4 @@
-const MODERATION_COMMAND = /^\/(경고초기화|경고|뮤트해제|뮤트|강퇴|밴)(?:@[A-Za-z0-9_]+)?(?:\s+(@?[A-Za-z0-9_]+))?(?:\s+(\S+))?\s*$/u;
+const MODERATION_COMMAND = /^\/(경고초기화|경고|자유|뮤트해제|뮤트|강퇴|밴)(?:@[A-Za-z0-9_]+)?(?:\s+(@?[A-Za-z0-9_]+))?(?:\s+(\S+))?\s*$/u;
 
 const MUTED_PERMISSIONS = Object.freeze({
   can_send_messages: false,
@@ -132,6 +132,11 @@ function registerGroupModerationHandler(bot, { chatId, memberStore, logger = con
       if (command === '경고초기화') {
         await memberStore.resetWarnings(ctx.chatId, target);
         await ctx.reply(`✅ ${displayName(target)}님의 누적 경고를 0회로 초기화했습니다.`);
+        return undefined;
+      }
+      if (command === '자유') {
+        await memberStore.setWarningExempt(ctx.chatId, target);
+        await ctx.reply(`🕊️ ${displayName(target)}님을 경고 누적 대상에서 제외했습니다.`);
         return undefined;
       }
 

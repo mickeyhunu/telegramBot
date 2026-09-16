@@ -69,6 +69,11 @@ async function applyWarning(ctx, memberStore, user, reason, issuedBy = null) {
   const warningCount = member.moderation.warningCount;
   const name = displayName(user);
 
+  if (member.moderation.warningExempt) {
+    await ctx.reply(`🕊️ ${name}님은 경고 누적 대상에서 제외되어 있습니다.`);
+    return { warningCount, action: 'exempt' };
+  }
+
   if (warningCount >= 3) {
     await ctx.api.banChatMember({ chat_id: ctx.chatId, user_id: user.id });
     await memberStore.recordModeration(ctx.chatId, user, 'ban', ctx.message.date);
