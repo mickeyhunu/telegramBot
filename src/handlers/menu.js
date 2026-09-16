@@ -203,13 +203,32 @@ function registerMenuHandlers(bot, {
 }) {
   bot.command('start', async (ctx) => {
     if (ctx.chat?.type !== 'private') return undefined;
-    try {
-      await usageStore?.recordStart(ctx.from, ctx.message.date);
-    } catch (error) {
-      console.error(`개인 채팅 /start 사용자 정보 저장 실패 (${ctx.from?.id}): ${error.message}`);
-    }
-    await clearRecentPrivateMessages(ctx);
-    return startSubscriptionFlow(ctx, config);
+
+    // Sending the menu is the user-facing critical path. A chat with a long
+    // history can require many sequential deleteMessages requests, and the
+    // usage store may also be waiting behind another file write. Waiting for
+    // either task here used to delay the first /start response considerably.
+    const response = await startSubscriptionFlow(ctx, config);
+
+    // The cleanup only targets IDs older than this /start message, so it is
+    // safe to run after the response has been sent. Do not keep update
+    // handling blocked on these best-effort maintenance operations.
+    void Promise.allSettled([
+      usageStore?.recordStart(ctx.from, ctx.message.date),
+      clearRecentPrivateMessages(ctx),
+    ]).then((results) => {
+      const usageError = results[0]?.status === 'rejected' && results[0].reason;
+      if (usageError) {
+        console.error(`개인 채팅 /start 사용자 정보 저장 실패 (${ctx.from?.id}): ${usageError.message || usageError}`);
+      }
+
+      const cleanupError = results[1]?.status === 'rejected' && results[1].reason;
+      if (cleanupError) {
+        console.error(`개인 채팅 메시지 정리 실패 (${ctx.chatId}): ${cleanupError.message || cleanupError}`);
+      }
+    });
+
+    return response;
   });
   bot.command('제휴', (ctx) => ctx.reply(partnershipListMessage(config.links), {
     parse_mode: 'HTML',
